@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Drive.h"
+#include "Controls.h"
 #include <frc/TimedRobot.h>
 
 class Robot : public frc::TimedRobot {
@@ -23,4 +24,5 @@ public:
   
 private:
   Drive drive {};
+  Controls controls{&drive};
 };

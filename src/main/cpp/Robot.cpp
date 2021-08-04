@@ -18,7 +18,9 @@ void Robot::DisabledInit() { }
 void Robot::DisabledPeriodic() { }
 
 void Robot::TestInit() { }
-void Robot::TestPeriodic() { }
+void Robot::TestPeriodic() { 
+  controls.process();
+}
 
 #ifndef RUNNING_FRC_TESTS
 int main() {
