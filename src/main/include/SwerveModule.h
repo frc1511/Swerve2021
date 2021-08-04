@@ -21,6 +21,11 @@ public:
    * Sets the state of the swerve module.
    */
   void setState(frc::SwerveModuleState state);
+  
+  /**
+   * Returns the current state of the swerve module.
+   */
+  frc::SwerveModuleState getState();
 
   /**
    * Resets the encoders of the swerve module.
@@ -41,11 +46,6 @@ private:
    * Sets the rotation of the swerve module's turning motor.
    */
   void setTurningMotor(units::radian_t radians);
-  
-  /**
-   * Returns the current state of the swerve module.
-   */
-  frc::SwerveModuleState getState();
   
   /**
    * Returns the current velocity of the swerve module's drive motor.

@@ -24,9 +24,18 @@ void Drive::setDrive(frc::ChassisSpeeds chassisSpeeds) {
 
 void Drive::setDrive(units::velocity::meters_per_second_t xVelMeters,
                      units::velocity::meters_per_second_t yVelMeters,
-                     units::degrees_per_second_t degreesPerSecond) {
-  // Create chassis speeds struct from parameters, then call the other setDrive function.
-  setDrive(frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVelMeters, yVelMeters, units::radians_per_second_t(degreesPerSecond), getRotation()));
+                     units::degrees_per_second_t degreesPerSecond,
+                     bool isFieldCentric) {
+  if(isFieldCentric)
+    // Create relative chassis speeds struct from parameters, then call the other setDrive function.
+    setDrive(frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVelMeters, yVelMeters, units::radians_per_second_t(degreesPerSecond), getRotation()));
+  else
+    // Create chassis speeds struct from parameters, then call the other setDrive function.
+    setDrive({ xVelMeters, yVelMeters, units::radians_per_second_t(degreesPerSecond) });
+}
+
+void Drive::process() {
+  updateOdometry();
 }
 
 frc::Rotation2d Drive::getRotation() {
@@ -37,6 +46,18 @@ frc::Rotation2d Drive::getRotation() {
     rotation -= 360 * (std::signbit(absRotation) ? -1 : 1);
   
   return frc::Rotation2d(units::degree_t(rotation));
+}
+
+void Drive::updateOdometry() {
+  odometry.Update(getRotation(), swerveModules.at(0).getState(), swerveModules.at(1).getState(), swerveModules.at(2).getState(), swerveModules.at(3).getState());
+}
+
+void Drive::resetOdometry(frc::Pose2d pose) {
+  odometry.ResetPosition(pose, getRotation());
+}
+
+frc::Pose2d Drive::getPoseMeters() {
+  return odometry.GetPose();
 }
 
 void Drive::resetSwerveEncoders() {

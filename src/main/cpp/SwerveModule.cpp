@@ -90,6 +90,10 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
   setDriveMotor(ControlMode::Velocity, optimizedState.speed.value());
 }
 
+frc::SwerveModuleState SwerveModule::getState() {
+  return { units::meters_per_second_t(getVelocity()), frc::Rotation2d(getAbsoluteRotation()) };
+}
+
 void SwerveModule::resetEncoders() {
   turningRelEncoder.SetPosition(0);
   turningAbsSensor.SetPosition(0);
@@ -114,10 +118,6 @@ void SwerveModule::setTurningMotor(units::radian_t radians) {
   
   // Set PID controller reference.
   turningPID.SetReference(output.value(), rev::ControlType::kPosition);
-}
-
-frc::SwerveModuleState SwerveModule::getState() {
-  return { units::meters_per_second_t(getVelocity()), frc::Rotation2d(getAbsoluteRotation()) };
 }
 
 double SwerveModule::getVelocity() {

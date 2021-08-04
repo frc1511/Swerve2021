@@ -4,7 +4,9 @@
 #include "IOMap.h"
 #include "frc/geometry/Translation2d.h"
 #include "frc/geometry/Rotation2d.h"
+#include "frc/geometry/Pose2d.h"
 #include "frc/kinematics/SwerveDriveKinematics.h"
+#include "frc/kinematics/SwerveDriveOdometry.h"
 #include "frc/kinematics/ChassisSpeeds.h"
 #include "frc/AnalogGyro.h"
 #include "wpi/array.h"
@@ -26,15 +28,36 @@ public:
   
   void setDrive(units::velocity::meters_per_second_t xVelMeters,
                 units::velocity::meters_per_second_t yVelMeters,
-                units::degrees_per_second_t degreesPerSecond);
+                units::degrees_per_second_t degreesPerSecond,
+                bool isFieldCentric = false);
   
   const units::meters_per_second_t maxSpeed = 1.0_mps;
+
+  /**
+   * Processes the odometry and stuff.
+   */
+  void process();
   
 private:
   /**
    * Returns the rotation of the robot.
    */
   frc::Rotation2d getRotation();
+
+  /**
+   * Updates the odometry.
+   */
+  void updateOdometry();
+
+  /**
+   * Resets the odometry.
+   */
+  void resetOdometry(frc::Pose2d pose);
+
+  /**
+   * Returns the Pose2d.
+   */
+  frc::Pose2d getPoseMeters();
   
   /**
    * Resets the encoders on the swerve modules.
@@ -77,6 +100,11 @@ private:
    * swerve module states.
    */
   frc::SwerveDriveKinematics<4> kinematics { locations };
+
+  /**
+   * The odometry class that handles field-centric stuff.
+   */
+  frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
   
   frc::AnalogGyro gyro {ANALOG_GYRO};
 };
