@@ -3,23 +3,23 @@
 #include "units/math.h"
 #include <cmath>
 
-// TODO: Find all these values...
-#define DRIVE_P_VALUE 0
-#define DRIVE_I_VALUE 0
-#define DRIVE_D_VALUE 0
-#define DRIVE_I_ZONE_VALUE 0
-#define DRIVE_FF_VALUE 0
-
-#define ROT_P_VALUE 0
-#define ROT_I_VALUE 0
-#define ROT_D_VALUE 0
-#define ROT_I_ZONE_VALUE 0
-#define ROT_FF_VALUE 0
+#define DRIVE_ENC_TO_METERS_FACTOR 0.00002226
+#define RAD_TO_ENC_FACTOR 10.1859
 
 #define DRIVE_MAX_VOLTAGE 12
 #define ROT_MAX_VOLTAGE 12
 
-#define RAD_TO_ENC_FACTOR 10.1859
+#define DRIVE_P_VALUE 1000
+#define DRIVE_I_VALUE 0
+#define DRIVE_D_VALUE 25
+#define DRIVE_I_ZONE_VALUE 0
+#define DRIVE_FF_VALUE 1023/(DRIVE_MAX_VOLTAGE/DRIVE_ENC_TO_METERS_FACTOR)
+
+#define ROT_P_VALUE 0.4
+#define ROT_I_VALUE 0
+#define ROT_D_VALUE 0
+#define ROT_I_ZONE_VALUE 0
+#define ROT_FF_VALUE 0
 
 SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel) :
   driveMotorChannel(driveMotorChannel),
