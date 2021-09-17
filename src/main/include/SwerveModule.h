@@ -14,9 +14,6 @@ public:
   SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel);
   ~SwerveModule();
   
-  // Copy constructor necessary due to TalonFX deleted copy constructor.
-  SwerveModule(const SwerveModule&);
-  
   /**
    * Sets the state of the swerve module.
    */

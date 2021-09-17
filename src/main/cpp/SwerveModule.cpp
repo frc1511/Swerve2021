@@ -72,10 +72,6 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
 
 SwerveModule::~SwerveModule() = default;
 
-SwerveModule::SwerveModule(const SwerveModule& oldSwerveModule) :
-  // Create a new object and only copy the motor channels.
-  SwerveModule(oldSwerveModule.driveMotorChannel, oldSwerveModule.turningMotorChannel, oldSwerveModule.canCoderChannel) { }
-
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
   frc::SwerveModuleState currentState = getState();
   

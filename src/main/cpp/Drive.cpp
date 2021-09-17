@@ -8,7 +8,10 @@ Drive::Drive() {
   calibrateGyro();
 }
 
-Drive::~Drive() = default;
+Drive::~Drive() {
+  for(SwerveModule* module : swerveModules)
+    delete module;
+}
 
 void Drive::setDrive(frc::ChassisSpeeds chassisSpeeds) {
   // Get target states.
@@ -19,7 +22,7 @@ void Drive::setDrive(frc::ChassisSpeeds chassisSpeeds) {
   
   // Set module states.
   for(unsigned i = 0; i < swerveModules.size(); i++)
-    swerveModules.at(i).setState(moduleStates.at(i));
+    swerveModules.at(i)->setState(moduleStates.at(i));
 }
 
 void Drive::setDrive(units::velocity::meters_per_second_t xVelMeters,
@@ -49,7 +52,7 @@ frc::Rotation2d Drive::getRotation() {
 }
 
 void Drive::updateOdometry() {
-  odometry.Update(getRotation(), swerveModules.at(0).getState(), swerveModules.at(1).getState(), swerveModules.at(2).getState(), swerveModules.at(3).getState());
+  odometry.Update(getRotation(), swerveModules.at(0)->getState(), swerveModules.at(1)->getState(), swerveModules.at(2)->getState(), swerveModules.at(3)->getState());
 }
 
 void Drive::resetOdometry(frc::Pose2d pose) {
@@ -61,8 +64,8 @@ frc::Pose2d Drive::getPoseMeters() {
 }
 
 void Drive::resetSwerveEncoders() {
-  for(SwerveModule& module : swerveModules)
-    module.resetEncoders();
+  for(SwerveModule* module : swerveModules)
+    module->resetEncoders();
 }
 
 void Drive::calibrateGyro() {
