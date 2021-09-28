@@ -26,6 +26,7 @@ public:
 
   /**
    * Resets the encoders of the swerve module.
+   * TODO Make button to do this.
    */
   void resetEncoders();
   

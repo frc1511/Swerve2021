@@ -66,8 +66,6 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   turningPID.SetFF(ROT_FF_VALUE, 0);
   
   turningAbsSensor.ConfigAbsoluteSensorRange(AbsoluteSensorRange::Signed_PlusMinus180);
-  
-  resetEncoders();
 }
 
 SwerveModule::~SwerveModule() = default;
@@ -78,7 +76,7 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
   // Optimize the target state using the current angle.
   frc::SwerveModuleState optimizedState = frc::SwerveModuleState::Optimize(targetState, currentState.angle);
   
-  if(optimizedState.speed > 0.0_mps)
+  if(units::math::abs(optimizedState.speed) > 0.01_mps)
     // Rotate the swerve module.
     setTurningMotor(optimizedState.angle.Radians());
   
@@ -91,8 +89,10 @@ frc::SwerveModuleState SwerveModule::getState() {
 }
 
 void SwerveModule::resetEncoders() {
-  turningRelEncoder.SetPosition(0);
-  turningAbsSensor.SetPosition(0);
+  CANCoderConfiguration config;
+  turningAbsSensor.GetAllConfigs(config);
+  
+  turningAbsSensor.ConfigMagnetOffset(config.magnetOffsetDegrees - turningAbsSensor.GetAbsolutePosition());
 }
 
 void SwerveModule::setDriveMotor(ControlMode controlMode, double value) {
@@ -121,7 +121,7 @@ double SwerveModule::getVelocity() {
 }
 
 units::radian_t SwerveModule::getAbsoluteRotation() {
-  return units::radian_t(units::degree_t(turningAbsSensor.GetPosition()));
+  return units::radian_t(units::degree_t(turningAbsSensor.GetAbsolutePosition()));
 }
 
 units::radian_t SwerveModule::getRelativeRotation() {

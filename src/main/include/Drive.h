@@ -12,6 +12,9 @@
 #include "wpi/array.h"
 #include "wpi/math"
 
+#define ROBOT_WIDTH 0.362_m
+#define ROBOT_LENGTH 0.66_m
+
 /**
  * The Drive class.
  * Handles the driving of the robot.
@@ -89,10 +92,10 @@ private:
    */
   wpi::array<frc::Translation2d, 4> locations {
     // TODO: Find the actual measurements from center.
-    frc::Translation2d(-0.381_m, +0.381_m),
-    frc::Translation2d(-0.381_m, -0.381_m),
-    frc::Translation2d(+0.381_m, -0.381_m),
-    frc::Translation2d(+0.381_m, +0.381_m),
+    frc::Translation2d(-ROBOT_WIDTH/2, +ROBOT_LENGTH/2),
+    frc::Translation2d(-ROBOT_WIDTH/2, -ROBOT_LENGTH/2),
+    frc::Translation2d(+ROBOT_WIDTH/2, -ROBOT_LENGTH/2),
+    frc::Translation2d(+ROBOT_WIDTH/2, +ROBOT_LENGTH/2),
   };
   
   /**
