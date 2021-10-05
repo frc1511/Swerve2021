@@ -2,6 +2,7 @@
 
 #include "units/math.h"
 #include <cmath>
+#include <stdio.h>
 
 #define DRIVE_ENC_TO_METERS_FACTOR 0.00002226
 #define RAD_TO_ENC_FACTOR 10.1859
@@ -33,6 +34,8 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   turningPID(turningMotor.GetPIDController()),
   
   turningAbsSensor(canCoderChannel) {
+  
+  puts("Creating Swerve Module");
   
   driveMotor.ConfigFactoryDefault();
   driveMotor.SetNeutralMode(NeutralMode::Brake);
@@ -66,22 +69,28 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   turningPID.SetFF(ROT_FF_VALUE, 0);
   
   turningAbsSensor.ConfigAbsoluteSensorRange(AbsoluteSensorRange::Signed_PlusMinus180);
+
+  puts("Created Swerve Module");
 }
 
 SwerveModule::~SwerveModule() = default;
 
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
+  puts("Setting Swerve Module State");
   frc::SwerveModuleState currentState = getState();
   
   // Optimize the target state using the current angle.
   frc::SwerveModuleState optimizedState = frc::SwerveModuleState::Optimize(targetState, currentState.angle);
+  puts("Optimized target state");
   
   if(units::math::abs(optimizedState.speed) > 0.01_mps)
     // Rotate the swerve module.
     setTurningMotor(optimizedState.angle.Radians());
+  puts("Set turning motor");
   
   // Set the drive motor's velocity.
   setDriveMotor(ControlMode::Velocity, optimizedState.speed.value());
+  puts("Set drive motor");
 }
 
 frc::SwerveModuleState SwerveModule::getState() {
@@ -89,10 +98,12 @@ frc::SwerveModuleState SwerveModule::getState() {
 }
 
 void SwerveModule::resetEncoders() {
+  puts("Resetting encoders");
   CANCoderConfiguration config;
   turningAbsSensor.GetAllConfigs(config);
   
   turningAbsSensor.ConfigMagnetOffset(config.magnetOffsetDegrees - turningAbsSensor.GetAbsolutePosition());
+  puts("Reset Encoders");
 }
 
 void SwerveModule::setDriveMotor(ControlMode controlMode, double value) {
@@ -100,6 +111,7 @@ void SwerveModule::setDriveMotor(ControlMode controlMode, double value) {
 }
 
 void SwerveModule::setTurningMotor(units::radian_t radians) {
+  puts("Setting turning motor");
   units::radian_t rotation(radians - getAbsoluteRotation());
   units::radian_t absRotation(units::math::abs(rotation));
   
@@ -114,6 +126,7 @@ void SwerveModule::setTurningMotor(units::radian_t radians) {
   
   // Set PID controller reference.
   turningPID.SetReference(output.value(), rev::ControlType::kPosition);
+  puts("Set turning motor");
 }
 
 double SwerveModule::getVelocity() {
@@ -121,9 +134,9 @@ double SwerveModule::getVelocity() {
 }
 
 units::radian_t SwerveModule::getAbsoluteRotation() {
-  return units::radian_t(units::degree_t(turningAbsSensor.GetAbsolutePosition()));
+  return units::radian_t(turningAbsSensor.GetAbsolutePosition() * RAD_TO_ENC_FACTOR);
 }
 
 units::radian_t SwerveModule::getRelativeRotation() {
-  return units::radian_t(units::degree_t(turningRelEncoder.GetPosition()));
+  return units::radian_t(turningRelEncoder.GetPosition() * RAD_TO_ENC_FACTOR);
 }

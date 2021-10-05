@@ -24,7 +24,9 @@ Controls::Controls(Drive* drive) :drive(drive){
 
 }
 
+#include <stdio.h>
 void Controls::process(){
+  puts("Processing controls");
     bool toggleDriveMode = controllerDriver.GetRawButton(kXButton);
     double xAxisVelocity = controllerDriver.GetRawAxis(kLeftXAxis);
     double yAxisVelocity = controllerDriver.GetRawAxis(kLeftYAxis);
@@ -90,5 +92,6 @@ void Controls::process(){
     drive->setDrive(units::velocity::meters_per_second_t (finalXAxis), units::velocity::meters_per_second_t (finalYAxis), units::degrees_per_second_t(finalRotation));
 
 
+  puts("Finished controls");
 
 }

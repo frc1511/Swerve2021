@@ -18,7 +18,9 @@ void Robot::DisabledInit() { }
 void Robot::DisabledPeriodic() { }
 
 void Robot::TestInit() { }
+#include <stdio.h>
 void Robot::TestPeriodic() { 
+  puts("Starting controls");
   controls.process();
 }
 
