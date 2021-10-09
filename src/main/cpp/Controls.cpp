@@ -75,7 +75,7 @@ void Controls::process(){
         if(slowLeftVelocity && slowRightVelocity == false){
             finalRotation = -90;
         }
-        if(slowRightVelocity && !slowLeftVelocity == false){
+        if(slowRightVelocity && slowLeftVelocity == false){
             finalRotation = 90;
         }
     }
