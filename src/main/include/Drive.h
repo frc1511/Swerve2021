@@ -34,7 +34,7 @@ public:
                 units::degrees_per_second_t degreesPerSecond,
                 bool isFieldCentric = false);
   
-  const units::meters_per_second_t maxSpeed = 1.0_mps;
+  const units::meters_per_second_t maxSpeed = 0.5_mps;
 
   /**
    * Processes the odometry and stuff.
