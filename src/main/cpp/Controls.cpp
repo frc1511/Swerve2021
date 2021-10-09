@@ -81,15 +81,15 @@ void Controls::process(){
     }
     else{ // trigger not pressed so normal mode
         if((leftRotationVelocity > 0) && (rightRotationVelocity == 0)){
-            finalRotation = -(leftRotationVelocity*360);
+            finalRotation = -leftRotationVelocity;
         }
         if((rightRotationVelocity > 0) && (leftRotationVelocity == 0)){
-            finalRotation = (rightRotationVelocity*360);
+            finalRotation = rightRotationVelocity;
         }
     }
 
 
-    drive->setDrive(units::velocity::meters_per_second_t (finalXAxis), units::velocity::meters_per_second_t (finalYAxis), units::degrees_per_second_t(finalRotation));
+    drive->setDrive(units::velocity::meters_per_second_t(finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation));
 
 
   puts("Finished controls");

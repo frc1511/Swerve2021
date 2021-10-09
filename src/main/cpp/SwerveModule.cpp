@@ -89,7 +89,7 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
   puts("Set turning motor");
   
   // Set the drive motor's velocity.
-  setDriveMotor(ControlMode::Velocity, optimizedState.speed.value());
+  setDriveMotor(ControlMode::PercentOutput, optimizedState.speed.value());
   puts("Set drive motor");
 }
 
