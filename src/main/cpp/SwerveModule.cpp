@@ -134,9 +134,9 @@ double SwerveModule::getVelocity() {
 }
 
 units::radian_t SwerveModule::getAbsoluteRotation() {
-  return units::radian_t(turningAbsSensor.GetAbsolutePosition() * RAD_TO_ENC_FACTOR);
+  return units::radian_t(units::degree_t(turningAbsSensor.GetAbsolutePosition()));
 }
 
 units::radian_t SwerveModule::getRelativeRotation() {
-  return units::radian_t(turningRelEncoder.GetPosition() * RAD_TO_ENC_FACTOR);
+  return units::radian_t(turningRelEncoder.GetPosition() / RAD_TO_ENC_FACTOR);
 }
