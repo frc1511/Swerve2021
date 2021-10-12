@@ -88,6 +88,7 @@ void Controls::process(){
         }
     }
 
+    printf("finalXAxis: %f, finalYAxis: %f, finalRotation: %f\n", finalXAxis, finalYAxis, finalRotation);
 
     drive->setDrive(units::velocity::meters_per_second_t(finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation));
 
