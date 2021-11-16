@@ -33,8 +33,8 @@ void Controls::process(){
     double leftRotationVelocity = controllerDriver.GetRawAxis(kLeftTrigger);
     double rightRotationVelocity = controllerDriver.GetRawAxis(kRightTrigger);
     float slowDriveDirection = controllerDriver.GetPOV(kDPad);
-    bool slowLeftVelocity = controllerDriver.GetRawButton(kLeftTrigger);
-    bool slowRightVelocity = controllerDriver.GetRawButton(kRightTrigger);
+    bool slowLeftVelocity = controllerDriver.GetRawButton(kLeftBumper);
+    bool slowRightVelocity = controllerDriver.GetRawButton(kRightBumper);
     
 
     if(toggleDriveMode == true) {
