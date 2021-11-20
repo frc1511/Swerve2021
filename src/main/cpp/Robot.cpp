@@ -5,14 +5,15 @@ void Robot::RobotInit() {
 }
 
 void Robot::RobotPeriodic() {
-  
 }
 
 void Robot::AutonomousInit() { }
 void Robot::AutonomousPeriodic() { }
 
 void Robot::TeleopInit() { }
-void Robot::TeleopPeriodic() { }
+void Robot::TeleopPeriodic() {
+  controls.process();
+}
 
 void Robot::DisabledInit() { }
 void Robot::DisabledPeriodic() { }
@@ -20,8 +21,7 @@ void Robot::DisabledPeriodic() { }
 void Robot::TestInit() { }
 #include <stdio.h>
 void Robot::TestPeriodic() { 
-  puts("Starting controls");
-  controls.process();
+  TeleopPeriodic();
 }
 
 #ifndef RUNNING_FRC_TESTS

@@ -1,4 +1,5 @@
 #include "Controls.h"
+#include <math.h>
 
 // Xbox button maps
 const int kAButton = 1; // GetRawButton() give bool
@@ -17,7 +18,7 @@ const int kRightXAxis = 4; // GetRawAxis() give float
 const int kRightYAxis = 5; // GetRawAxis() give float
 const int kDPad = 0; // GetPOV() give float
 
-const int kAxisDeadzone = .1;
+const double kAxisDeadzone = .3;
 
 
 Controls::Controls(Drive* drive) :drive(drive){
@@ -26,7 +27,7 @@ Controls::Controls(Drive* drive) :drive(drive){
 
 #include <stdio.h>
 void Controls::process(){
-  puts("Processing controls");
+  //puts("Processing controls");
     bool toggleDriveMode = controllerDriver.GetRawButton(kXButton);
     double xAxisVelocity = controllerDriver.GetRawAxis(kLeftXAxis);
     double yAxisVelocity = controllerDriver.GetRawAxis(kLeftYAxis);
@@ -35,7 +36,6 @@ void Controls::process(){
     float slowDriveDirection = controllerDriver.GetPOV(kDPad);
     bool slowLeftVelocity = controllerDriver.GetRawButton(kLeftBumper);
     bool slowRightVelocity = controllerDriver.GetRawButton(kRightBumper);
-    
 
     if(toggleDriveMode == true) {
         if(wasDriveModeToggled == false) {
@@ -45,38 +45,56 @@ void Controls::process(){
 
     wasDriveModeToggled = toggleDriveMode;
 
-    double finalXAxis = 0;
-    double finalYAxis = 0;
-    double finalRotation = 0;
+    double finalXAxis = 0.0;
+    double finalYAxis = 0.0;
+    double finalRotation = 0.0;
 
     if(slowDriveDirection == -1){ // DPad not pressed so not in slow mode
-        if((xAxisVelocity < -kAxisDeadzone) || (xAxisVelocity > kAxisDeadzone)){
-        finalXAxis = xAxisVelocity;
+        if(abs(xAxisVelocity) > kAxisDeadzone) {
+            finalXAxis = xAxisVelocity;
         }
-        if((yAxisVelocity < -kAxisDeadzone) || (yAxisVelocity > kAxisDeadzone)){
+        if(abs(yAxisVelocity) > kAxisDeadzone) {
             finalYAxis = yAxisVelocity;
         }
     }
     else{ // DPad is pressed so is in slow mode
-        if((slowDriveDirection >=375) || (slowDriveDirection <= 45)){ // dpad up
-            finalYAxis = .4;
+        
+         if((slowDriveDirection >=375) || (slowDriveDirection <= 45)){ // dpad up
+             finalYAxis = .4;
+         }
+         if((slowDriveDirection >= 135) && (slowDriveDirection <= 225)){ // dpad down
+             finalYAxis = -.4;
+         }
+         if((slowDriveDirection >= 45) && (slowDriveDirection <= 135)){ // dpad right
+             finalXAxis = .4;
+         }
+         if((slowDriveDirection >= 225) && (slowDriveDirection <= 315)){ // dpad left
+             finalXAxis = -.4;
+         }
+        /*if((slowDriveDirection >=375) || (slowDriveDirection <= 45)){ // dpad up
+        //drive swerveModules 0 -> setTurningMotor(0);//fix me!!!
+            drive->swerveModules[0]->setTurningMotor(units::radian_t(2));
+            puts("01");
         }
         if((slowDriveDirection >= 135) && (slowDriveDirection <= 225)){ // dpad down
-            finalYAxis = -.4;
+            drive->swerveModules[1]->setTurningMotor(units::radian_t(2));
+            puts("02");
         }
         if((slowDriveDirection >= 45) && (slowDriveDirection <= 135)){ // dpad right
-            finalXAxis = .4;
+            drive->swerveModules[2]->setTurningMotor(units::radian_t(2));
+            puts("03");
         }
         if((slowDriveDirection >= 225) && (slowDriveDirection <= 315)){ // dpad left
-            finalXAxis = -.4;
-        }
+            drive->swerveModules[3]->setTurningMotor(units::radian_t(2));
+            puts("04");
+        }*/
     }
     if(slowLeftVelocity || slowRightVelocity){ //trigger pressed so slow mode
         if(slowLeftVelocity && slowRightVelocity == false){
-            finalRotation = -90;
+            finalRotation = -.25;
         }
         if(slowRightVelocity && slowLeftVelocity == false){
-            finalRotation = 90;
+            finalRotation = .25;
         }
     }
     else{ // trigger not pressed so normal mode
@@ -88,11 +106,7 @@ void Controls::process(){
         }
     }
 
-    printf("finalXAxis: %f, finalYAxis: %f, finalRotation: %f\n", finalXAxis, finalYAxis, finalRotation);
+    printf("X: %f, Y: %f\n", finalXAxis, finalYAxis);
 
     drive->setDrive(units::velocity::meters_per_second_t(finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation));
-
-
-  puts("Finished controls");
-
 }

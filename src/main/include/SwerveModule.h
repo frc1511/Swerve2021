@@ -30,6 +30,8 @@ public:
    */
   void resetEncoders();
   
+  void setTurningMotor(units::radian_t radians);
+
   const int driveMotorChannel;
   const int turningMotorChannel;
   const int canCoderChannel;
@@ -43,7 +45,9 @@ private:
   /**
    * Sets the rotation of the swerve module's turning motor.
    */
-  void setTurningMotor(units::radian_t radians);
+  
+
+  void stopTurningMotor(void);
   
   /**
    * Returns the current velocity of the swerve module's drive motor.
@@ -58,7 +62,7 @@ private:
   /**
    * Returns the current rotation of the NEO 550.
    */
-  units::radian_t getRelativeRotation();
+  double getRelativeRotation();
   
 private:
   /**

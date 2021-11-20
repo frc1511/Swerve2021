@@ -7,7 +7,6 @@
 Drive::Drive() {
   // gyro.Reset();
   // calibrateGyro();
-  puts("Drive Created");
 }
 
 Drive::~Drive() {
@@ -16,19 +15,22 @@ Drive::~Drive() {
 }
 
 void Drive::setDrive(frc::ChassisSpeeds chassisSpeeds) {
-  puts("Set Drive Called");
   // Get target states.
   wpi::array<frc::SwerveModuleState, 4> moduleStates = kinematics.ToSwerveModuleStates(chassisSpeeds);
-  puts("Got Swerve Module States");
   
   // Normalize speeds relative to max speed.
   kinematics.NormalizeWheelSpeeds(&moduleStates, maxSpeed);
-  puts("Normalized Wheel Speeds");
+  // printf( "1 - %f\n", moduleStates[0].angle.Degrees().value() );
+  // printf( "2 - %f\n", moduleStates[1].angle.Degrees().value() );
+  // printf( "3 - %f\n", moduleStates[2].angle.Degrees().value() );
+  // printf( "4 - %f\n", moduleStates[3].angle.Degrees().value() );
   
   // Set module states.
-  for(unsigned i = 0; i < swerveModules.size(); i++)
+  for(unsigned i = 0; i < swerveModules.size(); i++) {
+    printf("%d - ", i);
     swerveModules.at(i)->setState(moduleStates.at(i));
-  puts("Set Module States");
+
+  }
 }
 
 void Drive::setDrive(units::velocity::meters_per_second_t xVelMeters,
