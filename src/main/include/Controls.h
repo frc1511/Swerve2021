@@ -9,9 +9,9 @@ class Controls{
     Controls(Drive* drive);
     void process();
     
-    private:
     std::unique_ptr<Drive> drive; 
     frc::Joystick controllerDriver{0};
+    private:
 
     bool isFieldCentric = false;
     bool wasDriveModeToggled = false;

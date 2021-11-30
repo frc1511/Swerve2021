@@ -11,7 +11,7 @@
  */
 class SwerveModule {
 public:
-  SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel);
+  SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double orange);
   ~SwerveModule();
   
   /**
@@ -36,7 +36,6 @@ public:
   const int turningMotorChannel;
   const int canCoderChannel;
   
-private:
   /**
    * Sets the mode and mode value of the swerve module's drive motor.
    */
@@ -64,7 +63,6 @@ private:
    */
   double getRelativeRotation();
   
-private:
   /**
    * Falcon 500
    * Swerve module drive motor.
@@ -84,4 +82,6 @@ private:
    * The swerve module's magnetic encoder.
    */
   CANCoder turningAbsSensor;
+  
+private:
 };

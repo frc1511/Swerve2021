@@ -40,15 +40,8 @@ public:
    * Processes the odometry and stuff.
    */
   void process();
-
-  wpi::array<SwerveModule*, 4> swerveModules {
-    new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER),
-    new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER),
-    new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER),
-    new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER),
-  };
   
-private:
+
   /**
    * Returns the rotation of the robot.
    */
@@ -79,12 +72,7 @@ private:
    */
   void calibrateGyro();
 
- /**
-   * The swerve modules on the robot.
-   */
-  
-private: 
-  
+ 
   /**
    * The locations of the swerve modules on the robot.
    *
@@ -99,7 +87,17 @@ private:
     frc::Translation2d(+ROBOT_WIDTH/2, -ROBOT_LENGTH/2),
     frc::Translation2d(+ROBOT_WIDTH/2, +ROBOT_LENGTH/2),
   };
-  
+
+/**
+   * The swerve modules on the robot.
+   */
+  wpi::array<SwerveModule*, 4> swerveModules {
+    new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER, -98.0),
+    new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER, -73.0),
+    new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER, 160.0),
+    new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER, -15.0),
+  };
+
   /**
    * The helper class that converts chassis speeds into
    * swerve module states.

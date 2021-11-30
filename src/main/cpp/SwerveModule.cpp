@@ -16,13 +16,13 @@
 #define DRIVE_I_ZONE_VALUE 0
 #define DRIVE_FF_VALUE 1023/(DRIVE_MAX_VOLTAGE/DRIVE_ENC_TO_METERS_FACTOR)
 
-#define ROT_P_VALUE 0.4
+#define ROT_P_VALUE 0.4//0.001
 #define ROT_I_VALUE 0
 #define ROT_D_VALUE 0
 #define ROT_I_ZONE_VALUE 0
 #define ROT_FF_VALUE 0
 
-SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel) :
+SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double orange) :
   driveMotorChannel(driveMotorChannel),
   turningMotorChannel(turningMotorChannel),
   canCoderChannel(canCoderChannel),
@@ -67,24 +67,27 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   turningPID.SetFF(ROT_FF_VALUE, 0);
   
   turningAbsSensor.ConfigAbsoluteSensorRange(AbsoluteSensorRange::Signed_PlusMinus180);
+
+  turningPID.SetReference(orange * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
 }
 
 SwerveModule::~SwerveModule() = default;
 
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
-  printf("%f  ", targetState.angle.Degrees().value());
-  printf("%f  ", targetState.angle.Radians().value());
-  // frc::SwerveModuleState currentState = getState();
+  //printf("%f  ", targetState.angle.Degrees().value());
+  //printf("%f  ", targetState.angle.Radians().value());
+  frc::SwerveModuleState currentState = getState();
 
   // Optimize the target state using the current angle.
-  frc::SwerveModuleState optimizedState = targetState; //frc::SwerveModuleState::Optimize(targetState, currentState.angle);
+  frc::SwerveModuleState optimizedState = frc::SwerveModuleState::Optimize(targetState, currentState.angle);
   
-  if(units::math::abs(optimizedState.speed) > 0.01_mps){
+  // if(units::math::abs(optimizedState.speed) > 0.01_mps){
     // Rotate the swerve module.
-    printf("%f   ", optimizedState.angle.Radians().value());
-    setTurningMotor(optimizedState.angle.Radians());
-  }else
-    stopTurningMotor();
+    //printf("%f   ", optimizedState.angle.Radians().value());
+    // setTurningMotor(optimizedState.angle.Radians());
+    turningPID.SetReference(1 * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
+  // }else
+    // stopTurningMotor();
 
   // Set the drive motor's velocity.
   // setDriveMotor(ControlMode::PercentOutput, optimizedState.speed.value());
@@ -106,11 +109,11 @@ void SwerveModule::setDriveMotor(ControlMode controlMode, double value) {
 }
 
 void SwerveModule::setTurningMotor(units::radian_t radians) {
-  printf("input: %f  ", radians.value());
-  printf("current: %f  ", getAbsoluteRotation().value());
+  //printf("input: %f  ", radians.value());
+  //printf("current: %f  ", getAbsoluteRotation().value());
 
   units::radian_t rotation(radians - getAbsoluteRotation());
-  printf("difference: %f  ", rotation.value());
+  //printf("difference: %f  ", rotation.value());
   units::radian_t absRotation(units::math::abs(rotation));
   
   // Fix the discontinuity problem.
@@ -118,12 +121,12 @@ void SwerveModule::setTurningMotor(units::radian_t radians) {
   if(absRotation.value() > wpi::math::pi)
     // Subtract 2π rad, or add 2π rad depending on the sign.
     rotation = units::radian_t(rotation.value() - (2 * wpi::math::pi) * (std::signbit(rotation.value()) ? -1 : 1));
-  printf("corrected: %f  ", rotation.value());
+  //printf("corrected: %f  ", rotation.value());
   double output = rotation.value() * RAD_TO_ENC_FACTOR;
   output += getRelativeRotation();
   
   // Set PID controller reference.
-  printf("referance: %f\n", output);
+  //printf("referance: %f\n", output);
   turningPID.SetReference(output, rev::ControlType::kPosition);
 }
 

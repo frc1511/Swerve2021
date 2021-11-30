@@ -15,8 +15,15 @@ void Robot::TeleopPeriodic() {
   controls.process();
 }
 
+#include "units/math.h"
+#include "units/units.h"
 void Robot::DisabledInit() { }
-void Robot::DisabledPeriodic() { }
+void Robot::DisabledPeriodic() {
+  for (int i = 0; i < controls.drive->swerveModules.size(); ++i) {
+  printf("[%d] abs: %f, rel: %f, drive: %f\n", i, units::degree_t(controls.drive->swerveModules[i]->getAbsoluteRotation()).value(), controls.drive->swerveModules[i]->getRelativeRotation(), controls.drive->swerveModules[i]->driveMotor.GetSelectedSensorVelocity());
+  
+  }
+}
 
 void Robot::TestInit() { }
 #include <stdio.h>

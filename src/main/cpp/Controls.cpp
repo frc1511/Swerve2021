@@ -1,5 +1,6 @@
 #include "Controls.h"
 #include <math.h>
+#include "rev/CANSparkMax.h"
 
 // Xbox button maps
 const int kAButton = 1; // GetRawButton() give bool
@@ -108,5 +109,9 @@ void Controls::process(){
 
     printf("X: %f, Y: %f\n", finalXAxis, finalYAxis);
 
+    // drive->swerveModules[2]->turningPID.SetReference(1 * 10, rev::ControlType::kPosition);
+    
+
     drive->setDrive(units::velocity::meters_per_second_t(finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation));
+    // drive->setDrive(units::velocity::meters_per_second_t(1), units::velocity::meters_per_second_t(0), units::radians_per_second_t(0));
 }
