@@ -111,6 +111,7 @@ void Controls::process(){
 
     // drive->swerveModules[2]->turningPID.SetReference(1 * 10, rev::ControlType::kPosition);
     
+    // drive->swerveModules[0]->setDriveMotor(ControlMode::PercentOutput, 7/11);
 
     drive->setDrive(units::velocity::meters_per_second_t(finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation));
     // drive->setDrive(units::velocity::meters_per_second_t(1), units::velocity::meters_per_second_t(0), units::radians_per_second_t(0));

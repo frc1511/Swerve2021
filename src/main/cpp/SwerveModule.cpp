@@ -33,7 +33,8 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   turningRelEncoder(turningMotor.GetEncoder()),
   turningPID(turningMotor.GetPIDController()),
   
-  turningAbsSensor(canCoderChannel) {
+  turningAbsSensor(canCoderChannel),
+  turningOffset(orange) {
   
   driveMotor.ConfigFactoryDefault();
   driveMotor.SetNeutralMode(NeutralMode::Brake);
@@ -68,7 +69,8 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   
   turningAbsSensor.ConfigAbsoluteSensorRange(AbsoluteSensorRange::Signed_PlusMinus180);
 
-  turningPID.SetReference(orange * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
+  // turningPID.SetReference(orange * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
+  // turningPID.SetReference(orange * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
 }
 
 SwerveModule::~SwerveModule() = default;
@@ -81,16 +83,18 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
   // Optimize the target state using the current angle.
   frc::SwerveModuleState optimizedState = frc::SwerveModuleState::Optimize(targetState, currentState.angle);
   
-  // if(units::math::abs(optimizedState.speed) > 0.01_mps){
+  if(units::math::abs(optimizedState.speed) > 0.01_mps)
     // Rotate the swerve module.
     //printf("%f   ", optimizedState.angle.Radians().value());
-    // setTurningMotor(optimizedState.angle.Radians());
-    turningPID.SetReference(1 * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
+    setTurningMotor(optimizedState.angle.Radians());
+    // setTurningMotor(units::radian_t(0));
+    // turningPID.SetReference(1 * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
   // }else
     // stopTurningMotor();
 
   // Set the drive motor's velocity.
-  // setDriveMotor(ControlMode::PercentOutput, optimizedState.speed.value());
+  setDriveMotor(ControlMode::PercentOutput, optimizedState.speed.value());
+  // setDriveMotor(ControlMode::PercentOutput, .5);
 }
 
 frc::SwerveModuleState SwerveModule::getState() {
@@ -139,7 +143,7 @@ double SwerveModule::getVelocity() {
 }
 
 units::radian_t SwerveModule::getAbsoluteRotation() {
-  return units::radian_t(units::degree_t(/* - */turningAbsSensor.GetAbsolutePosition()));
+  return units::radian_t(units::degree_t(turningAbsSensor.GetAbsolutePosition())) - turningOffset;
 }
 
 double SwerveModule::getRelativeRotation() {

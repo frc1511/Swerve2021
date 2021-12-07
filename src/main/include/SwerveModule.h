@@ -84,4 +84,5 @@ public:
   CANCoder turningAbsSensor;
   
 private:
+  const units::radian_t turningOffset;
 };

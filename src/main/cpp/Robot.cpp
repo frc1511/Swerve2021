@@ -20,7 +20,7 @@ void Robot::TeleopPeriodic() {
 void Robot::DisabledInit() { }
 void Robot::DisabledPeriodic() {
   for (int i = 0; i < controls.drive->swerveModules.size(); ++i) {
-  printf("[%d] abs: %f, rel: %f, drive: %f\n", i, units::degree_t(controls.drive->swerveModules[i]->getAbsoluteRotation()).value(), controls.drive->swerveModules[i]->getRelativeRotation(), controls.drive->swerveModules[i]->driveMotor.GetSelectedSensorVelocity());
+  printf("[%d] abs: %f, rel: %f, drive: %f\n", i, controls.drive->swerveModules[i]->getAbsoluteRotation().value(), controls.drive->swerveModules[i]->getRelativeRotation(), controls.drive->swerveModules[i]->driveMotor.GetSelectedSensorVelocity());
   
   }
 }
