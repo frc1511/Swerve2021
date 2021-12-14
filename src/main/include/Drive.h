@@ -34,7 +34,7 @@ public:
                 units::degrees_per_second_t degreesPerSecond,
                 bool isFieldCentric = false);
   
-  const units::meters_per_second_t maxSpeed = 0.5_mps;
+  const units::meters_per_second_t maxSpeed = 0.3_mps;
 
   /**
    * Processes the odometry and stuff.
@@ -92,10 +92,10 @@ public:
    * The swerve modules on the robot.
    */
   wpi::array<SwerveModule*, 4> swerveModules {
-    new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER, -1.44),
-    new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER, -1.29),
-    new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER, +2.87 + 3.14),
-    new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER, -0.21),
+    new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER, -1.44 + 3.14/2 - 0.26),
+    new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER, -1.29 + 3.14/2),
+    new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER, +2.87 + 3.14 + 3.14/2),
+    new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER, -0.21 + 3.14/2),
   };
 
   /**

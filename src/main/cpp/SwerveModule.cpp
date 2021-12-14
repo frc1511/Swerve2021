@@ -86,7 +86,7 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
   if(units::math::abs(optimizedState.speed) > 0.01_mps)
     // Rotate the swerve module.
     //printf("%f   ", optimizedState.angle.Radians().value());
-    setTurningMotor(optimizedState.angle.Radians());
+    setTurningMotor(optimizedState.angle.Radians());  
     // setTurningMotor(units::radian_t(0));
     // turningPID.SetReference(1 * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
   // }else
@@ -94,7 +94,7 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
 
   // Set the drive motor's velocity.
   setDriveMotor(ControlMode::PercentOutput, optimizedState.speed.value());
-  // setDriveMotor(ControlMode::PercentOutput, .5);
+  // setDriveMotor(ControlMode::PercentOutput, -0.1);
 }
 
 frc::SwerveModuleState SwerveModule::getState() {
