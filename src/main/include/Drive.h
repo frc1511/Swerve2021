@@ -72,7 +72,6 @@ public:
    */
   void calibrateGyro();
 
- 
   /**
    * The locations of the swerve modules on the robot.
    *
@@ -81,21 +80,20 @@ public:
    *           1 2
    */
   wpi::array<frc::Translation2d, 4> locations {
-    // TODO: Find the actual measurements from center.
     frc::Translation2d(-ROBOT_WIDTH/2, +ROBOT_LENGTH/2),
     frc::Translation2d(-ROBOT_WIDTH/2, -ROBOT_LENGTH/2),
     frc::Translation2d(+ROBOT_WIDTH/2, -ROBOT_LENGTH/2),
     frc::Translation2d(+ROBOT_WIDTH/2, +ROBOT_LENGTH/2),
   };
 
-/**
+  /**
    * The swerve modules on the robot.
    */
   wpi::array<SwerveModule*, 4> swerveModules {
-    new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER, -1.44 + 3.14/2 - 0.26),
-    new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER, -1.29 + 3.14/2),
-    new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER, +2.87 + 3.14 + 3.14/2),
-    new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER, -0.21 + 3.14/2),
+    new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER, -0.09),
+    new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER, +0.29),
+    new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER, +1.25),
+    new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER, +1.35),
   };
 
   /**

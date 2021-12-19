@@ -11,7 +11,7 @@
  */
 class SwerveModule {
 public:
-  SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double orange);
+  SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double turningOffset);
   ~SwerveModule();
   
   /**
@@ -30,12 +30,6 @@ public:
    */
   void resetEncoders();
   
-  void setTurningMotor(units::radian_t radians);
-
-  const int driveMotorChannel;
-  const int turningMotorChannel;
-  const int canCoderChannel;
-  
   /**
    * Sets the mode and mode value of the swerve module's drive motor.
    */
@@ -44,9 +38,7 @@ public:
   /**
    * Sets the rotation of the swerve module's turning motor.
    */
-  
-
-  void stopTurningMotor(void);
+  void setTurningMotor(units::radian_t radians);
   
   /**
    * Returns the current velocity of the swerve module's drive motor.
@@ -82,7 +74,10 @@ public:
    * The swerve module's magnetic encoder.
    */
   CANCoder turningAbsSensor;
+
+  const int driveMotorChannel;
+  const int turningMotorChannel;
+  const int canCoderChannel;
   
-private:
   const units::radian_t turningOffset;
 };

@@ -16,25 +16,22 @@
 #define DRIVE_I_ZONE_VALUE 0
 #define DRIVE_FF_VALUE 1023/(DRIVE_MAX_VOLTAGE/DRIVE_ENC_TO_METERS_FACTOR)
 
-#define ROT_P_VALUE 0.4//0.001
+#define ROT_P_VALUE 0.4
 #define ROT_I_VALUE 0
 #define ROT_D_VALUE 0
 #define ROT_I_ZONE_VALUE 0
 #define ROT_FF_VALUE 0
 
-SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double orange) :
+SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double turningOffset) :
   driveMotorChannel(driveMotorChannel),
   turningMotorChannel(turningMotorChannel),
   canCoderChannel(canCoderChannel),
-
   driveMotor(driveMotorChannel),
-  
   turningMotor(turningMotorChannel, rev::CANSparkMax::MotorType::kBrushless),
   turningRelEncoder(turningMotor.GetEncoder()),
   turningPID(turningMotor.GetPIDController()),
-  
   turningAbsSensor(canCoderChannel),
-  turningOffset(orange) {
+  turningOffset(turningOffset) {
   
   driveMotor.ConfigFactoryDefault();
   driveMotor.SetNeutralMode(NeutralMode::Brake);
@@ -46,13 +43,11 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   driveMotor.SetStatusFramePeriod(StatusFrameEnhanced::Status_1_General, 10);
   driveMotor.SetStatusFramePeriod(StatusFrameEnhanced::Status_2_Feedback0, 10);
   driveMotor.SetSelectedSensorPosition(0);
-  
   driveMotor.Config_kP(0, DRIVE_P_VALUE);
   driveMotor.Config_kI(0, DRIVE_I_VALUE);
   driveMotor.Config_kD(0, DRIVE_D_VALUE);
   driveMotor.Config_IntegralZone(0, DRIVE_I_ZONE_VALUE);
   driveMotor.Config_kF(0, DRIVE_FF_VALUE);
-  
   
   turningMotor.RestoreFactoryDefaults();
   turningMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
@@ -60,7 +55,6 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   turningMotor.SetSmartCurrentLimit(30);
   turningMotor.SetInverted(true);
   turningPID.SetFeedbackDevice(turningRelEncoder);
-  
   turningPID.SetP(ROT_P_VALUE, 0);
   turningPID.SetI(ROT_I_VALUE, 0);
   turningPID.SetD(ROT_D_VALUE, 0);
@@ -68,16 +62,11 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   turningPID.SetFF(ROT_FF_VALUE, 0);
   
   turningAbsSensor.ConfigAbsoluteSensorRange(AbsoluteSensorRange::Signed_PlusMinus180);
-
-  // turningPID.SetReference(orange * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
-  // turningPID.SetReference(orange * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
 }
 
 SwerveModule::~SwerveModule() = default;
 
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
-  //printf("%f  ", targetState.angle.Degrees().value());
-  //printf("%f  ", targetState.angle.Radians().value());
   frc::SwerveModuleState currentState = getState();
 
   // Optimize the target state using the current angle.
@@ -85,16 +74,10 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
   
   if(units::math::abs(optimizedState.speed) > 0.01_mps)
     // Rotate the swerve module.
-    //printf("%f   ", optimizedState.angle.Radians().value());
     setTurningMotor(optimizedState.angle.Radians());  
-    // setTurningMotor(units::radian_t(0));
-    // turningPID.SetReference(1 * RAD_TO_ENC_FACTOR, rev::ControlType::kPosition);
-  // }else
-    // stopTurningMotor();
 
   // Set the drive motor's velocity.
   setDriveMotor(ControlMode::PercentOutput, optimizedState.speed.value());
-  // setDriveMotor(ControlMode::PercentOutput, -0.1);
 }
 
 frc::SwerveModuleState SwerveModule::getState() {
@@ -113,11 +96,7 @@ void SwerveModule::setDriveMotor(ControlMode controlMode, double value) {
 }
 
 void SwerveModule::setTurningMotor(units::radian_t radians) {
-  //printf("input: %f  ", radians.value());
-  //printf("current: %f  ", getAbsoluteRotation().value());
-
   units::radian_t rotation(radians - getAbsoluteRotation());
-  //printf("difference: %f  ", rotation.value());
   units::radian_t absRotation(units::math::abs(rotation));
   
   // Fix the discontinuity problem.
@@ -125,17 +104,12 @@ void SwerveModule::setTurningMotor(units::radian_t radians) {
   if(absRotation.value() > wpi::math::pi)
     // Subtract 2π rad, or add 2π rad depending on the sign.
     rotation = units::radian_t(rotation.value() - (2 * wpi::math::pi) * (std::signbit(rotation.value()) ? -1 : 1));
-  //printf("corrected: %f  ", rotation.value());
+  
   double output = rotation.value() * RAD_TO_ENC_FACTOR;
   output += getRelativeRotation();
   
   // Set PID controller reference.
-  //printf("referance: %f\n", output);
   turningPID.SetReference(output, rev::ControlType::kPosition);
-}
-
-void SwerveModule::stopTurningMotor(void) {
-  turningMotor.Set(0);
 }
 
 double SwerveModule::getVelocity() {

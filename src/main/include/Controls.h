@@ -5,15 +5,12 @@
 #include "frc/XboxController.h"
 
 class Controls{
-    public:
+public:
     Controls(Drive* drive);
     void process();
     
     std::unique_ptr<Drive> drive; 
-    frc::Joystick controllerDriver{0};
-    private:
-
+    frc::Joystick controllerDriver {0};
+private:
     bool isFieldCentric = false;
-    bool wasDriveModeToggled = false;
-
 };

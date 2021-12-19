@@ -1,10 +1,8 @@
 #pragma once
 
-// TODO: Find actual channels.
-
-#define SWERVE_FL_DRIVE_MOTOR 22
-#define SWERVE_BL_DRIVE_MOTOR 23
-#define SWERVE_BR_DRIVE_MOTOR 20
+#define SWERVE_FL_DRIVE_MOTOR 20
+#define SWERVE_BL_DRIVE_MOTOR 22
+#define SWERVE_BR_DRIVE_MOTOR 23
 #define SWERVE_FR_DRIVE_MOTOR 21
 
 #define SWERVE_FL_ROT_MOTOR 2
@@ -12,19 +10,9 @@
 #define SWERVE_BR_ROT_MOTOR 3
 #define SWERVE_FR_ROT_MOTOR 1
 
-// #define SWERVE_FL_ROT_CAN_CODER 12 // 0
-// #define SWERVE_BL_ROT_CAN_CODER 13 // 1
-// #define SWERVE_BR_ROT_CAN_CODER 10 // 2
-// #define SWERVE_FR_ROT_CAN_CODER 11 // 3
-
 #define SWERVE_FL_ROT_CAN_CODER 11
 #define SWERVE_BL_ROT_CAN_CODER 12
 #define SWERVE_BR_ROT_CAN_CODER 13
 #define SWERVE_FR_ROT_CAN_CODER 10
 
-//0 = 3
-//3 = 2
-//1 = 0
-//2 = 1
-
-#define ANALOG_GYRO 12
+// #define ANALOG_GYRO 12
