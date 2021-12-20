@@ -21,9 +21,12 @@
 
 #define AXIS_DEADZONE .15
 
-Controls::Controls(Drive* drive) : drive(drive) {}
+Controls::Controls(Drive* drive, bool* playHomeDepoSong) :
+    drive(drive),
+    playHomeDepoSong(playHomeDepoSong) {}
 
 void Controls::process() {
+    bool toggleHomeDepoSong      = controllerDriver.GetRawButton(A_BUTTON);
     bool toggleDriveMode         = controllerDriver.GetRawButton(X_BUTTON);
     double xAxisVelocity         = controllerDriver.GetRawAxis(LEFT_X_AXIS);
     double yAxisVelocity         = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
@@ -32,6 +35,10 @@ void Controls::process() {
     int slowDriveDirection       = controllerDriver.GetPOV(DPAD);
     bool slowLeftVelocity        = controllerDriver.GetRawButton(LEFT_BUMPER);
     bool slowRightVelocity       = controllerDriver.GetRawButton(RIGHT_BUMPER);
+
+    if(toggleHomeDepoSong) {
+        *playHomeDepoSong = !*playHomeDepoSong;
+    }
 
     if(toggleDriveMode) {
         isFieldCentric = !isFieldCentric;
