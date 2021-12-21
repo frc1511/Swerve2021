@@ -1,24 +1,16 @@
 #include "Robot.h"
 
 void Robot::RobotInit() {
-  for(unsigned i = 0; i < drive.swerveModules.size(); ++i) {
-    orchestra.AddInstrument(drive.swerveModules[i]->driveMotor);
-  }
+  controls.initMusic();
 }
 void Robot::RobotPeriodic() { }
 
 void Robot::AutonomousInit() { }
 void Robot::AutonomousPeriodic() { }
 
-void Robot::TeleopInit() {
-  orchestra.LoadMusic("home_depo.chrp");
-}
+void Robot::TeleopInit() { }
 void Robot::TeleopPeriodic() {
   controls.process();
-  
-  if (playHomeDepoSong) {
-    orchestra.Play();
-  }
 }
 
 void Robot::DisabledInit() { }

@@ -3,7 +3,6 @@
 #include "Drive.h"
 #include "Controls.h"
 #include <frc/TimedRobot.h>
-#include <ctre/phoenix/music/Orchestra.h>
 
 class Robot : public frc::TimedRobot {
 public:
@@ -24,9 +23,6 @@ public:
   void TestPeriodic() override;
   
 private:
-  bool playHomeDepoSong = false;
-  Orchestra orchestra {};
-  
   Drive drive {};
-  Controls controls {&drive, &playHomeDepoSong};
+  Controls controls {&drive};
 };
