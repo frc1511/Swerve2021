@@ -42,18 +42,21 @@ void Controls::process() {
     bool slowLeftVelocity        = controllerDriver.GetRawButton(LEFT_BUMPER);
     bool slowRightVelocity       = controllerDriver.GetRawButton(RIGHT_BUMPER);
 
-    if(playMusic) {
+    if(toggleMusic) {
         if(!wasMusicToggled) {
             playMusic = !playMusic;
         }
     }
     wasMusicToggled = toggleMusic;
     
+    bool isMusicPlaying = orchestra.IsPlaying();
     if(playMusic) {
-        orchestra.Play();
+        if(!isMusicPlaying) {
+            orchestra.Play();
+        }
         return;
     } else {
-        if(orchestra.IsPlaying()) {
+        if(isMusicPlaying) {
             orchestra.Stop();
         }
     }
