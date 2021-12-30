@@ -39,7 +39,6 @@ void Controls::process() {
     bool slowLeftVelocity        = controllerDriver.GetRawButton(LEFT_BUMPER);
     bool slowRightVelocity       = controllerDriver.GetRawButton(RIGHT_BUMPER);
 #ifdef ENABLE_MUSIC
-    bool toggleMusic             = controllerDriver.GetRawButton(A_BUTTON);
     if(toggleMusic) {
         if(!wasMusicToggled) {
             playMusic = !playMusic;

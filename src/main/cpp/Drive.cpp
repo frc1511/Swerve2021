@@ -5,8 +5,13 @@
 #include <stdio.h>
 
 Drive::Drive() {
-  gyro.Reset();
-  // calibrateGyro();
+  imu.Reset();
+  // Configure the calibration time to 8 seconds.
+  imu.ConfigCalTime(frc::ADIS16470CalibrationTime::_8s);
+  // Set axis for the gryo to take.
+  imu.SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ); // TODO Test to make sure Z axis is up and down.
+  // Calibrate the IMU.
+  calibrateIMU();
 }
 
 Drive::~Drive() {
@@ -43,13 +48,11 @@ void Drive::process() {
 }
 
 frc::Rotation2d Drive::getRotation() {
-  double rotation = 0;//std::fmod(gyro.GetAngle(), 360);
+  double rotation = 0;//std::fmod(imu.GetAngle(), 360);
   
   double absRotation = std::abs(rotation);
   if(absRotation > 180)
     rotation -= 360 * (std::signbit(absRotation) ? -1 : 1);
-
-  // printf("rotation: %f\n", rotation)
   
   return frc::Rotation2d(units::degree_t(rotation));
 }
@@ -71,6 +74,6 @@ void Drive::resetSwerveEncoders() {
     module->resetEncoders();
 }
 
-void Drive::calibrateGyro() {
-  gyro.Calibrate();
+void Drive::calibrateIMU() {
+  imu.Calibrate();
 }

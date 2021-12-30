@@ -1,9 +1,12 @@
 #pragma once
 
 #include "ctre/phoenix.h"
-#include "rev/CANSparkMax.h"
 #include "frc/kinematics/SwerveModuleState.h"
-#include "units/units.h"
+// Disable stupid attribute ignored warning.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#include "rev/CANSparkMax.h"
+#pragma GCC diagnostic pop
 
 /**
  * The SwerveModule class.
@@ -54,6 +57,10 @@ public:
    * Returns the current rotation of the NEO 550.
    */
   double getRelativeRotation();
+
+  const int driveMotorChannel;
+  const int turningMotorChannel;
+  const int canCoderChannel;
   
   /**
    * Falcon 500
@@ -74,10 +81,6 @@ public:
    * The swerve module's magnetic encoder.
    */
   CANCoder turningAbsSensor;
-
-  const int driveMotorChannel;
-  const int turningMotorChannel;
-  const int canCoderChannel;
   
   const units::radian_t turningOffset;
 };

@@ -10,8 +10,7 @@ void Robot::AutonomousPeriodic() { }
 void Robot::TeleopInit() { }
 void Robot::TeleopPeriodic() {
   controls.process();
-  printf("%f\n", (double)fmod(controls.drive->gyro.GetAngle(), 360));
-  // printf("%f\n", (double)controls.drive->gyro.GetAngle());
+  printf("%f\n", std::fmod(controls.drive->imu.GetAngle(), 360));
 }
 
 void Robot::DisabledInit() { }

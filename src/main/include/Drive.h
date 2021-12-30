@@ -8,7 +8,7 @@
 #include "frc/kinematics/SwerveDriveKinematics.h"
 #include "frc/kinematics/SwerveDriveOdometry.h"
 #include "frc/kinematics/ChassisSpeeds.h"
-#include "frc/AnalogGyro.h"
+#include "adi/ADIS16470_IMU.h"
 #include "wpi/array.h"
 #include "wpi/math"
 
@@ -68,9 +68,9 @@ public:
   void resetSwerveEncoders();
   
   /**
-   * Calibrates the gyro.
+   * Calibrates the IMU.
    */
-  void calibrateGyro();
+  void calibrateIMU();
 
   /**
    * The locations of the swerve modules on the robot.
@@ -108,7 +108,7 @@ public:
   frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
   
   /**
-   * The gyro
+   * The ADIS16470 IMU
    */
-  frc::AnalogGyro gyro {ANALOG_GYRO};
+  frc::ADIS16470_IMU imu {};
 };
