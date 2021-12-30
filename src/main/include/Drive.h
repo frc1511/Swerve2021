@@ -107,5 +107,8 @@ public:
    */
   frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
   
-  // frc::AnalogGyro gyro {ANALOG_GYRO};
+  /**
+   * The gyro
+   */
+  frc::AnalogGyro gyro {ANALOG_GYRO};
 };

@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 Drive::Drive() {
-  // gyro.Reset();
+  gyro.Reset();
   // calibrateGyro();
 }
 
@@ -43,12 +43,13 @@ void Drive::process() {
 }
 
 frc::Rotation2d Drive::getRotation() {
-  // double rotation = std::fmod(gyro.GetAngle(), 360);
-  double rotation = 0;
+  double rotation = 0;//std::fmod(gyro.GetAngle(), 360);
   
   double absRotation = std::abs(rotation);
   if(absRotation > 180)
     rotation -= 360 * (std::signbit(absRotation) ? -1 : 1);
+
+  // printf("rotation: %f\n", rotation)
   
   return frc::Rotation2d(units::degree_t(rotation));
 }
@@ -71,5 +72,5 @@ void Drive::resetSwerveEncoders() {
 }
 
 void Drive::calibrateGyro() {
-  // gyro.Calibrate();
+  gyro.Calibrate();
 }

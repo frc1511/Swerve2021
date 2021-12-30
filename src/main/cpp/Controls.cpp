@@ -22,17 +22,14 @@
 #define AXIS_DEADZONE .15
 
 Controls::Controls(Drive* drive) : drive(drive) {
+#ifdef ENABLE_MUSIC
     for(unsigned i = 0; i < drive->swerveModules.size(); ++i) {
         orchestra.AddInstrument(drive->swerveModules[i]->driveMotor);
     }
-}
-
-void Controls::initMusic() {
-    orchestra.LoadMusic("home_depo.chrp");
+#endif
 }
 
 void Controls::process() {
-    bool toggleMusic             = controllerDriver.GetRawButton(A_BUTTON);
     bool toggleDriveMode         = controllerDriver.GetRawButton(X_BUTTON);
     double xAxisVelocity         = controllerDriver.GetRawAxis(LEFT_X_AXIS);
     double yAxisVelocity         = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
@@ -41,7 +38,8 @@ void Controls::process() {
     int slowDriveDirection       = controllerDriver.GetPOV(DPAD);
     bool slowLeftVelocity        = controllerDriver.GetRawButton(LEFT_BUMPER);
     bool slowRightVelocity       = controllerDriver.GetRawButton(RIGHT_BUMPER);
-
+#ifdef ENABLE_MUSIC
+    bool toggleMusic             = controllerDriver.GetRawButton(A_BUTTON);
     if(toggleMusic) {
         if(!wasMusicToggled) {
             playMusic = !playMusic;
@@ -52,6 +50,7 @@ void Controls::process() {
     bool isMusicPlaying = orchestra.IsPlaying();
     if(playMusic) {
         if(!isMusicPlaying) {
+            orchestra.LoadMusic("home_depo.chrp");
             orchestra.Play();
         }
         return;
@@ -60,6 +59,7 @@ void Controls::process() {
             orchestra.Stop();
         }
     }
+#endif
 
     if(toggleDriveMode) {
         if(!wasDriveModeToggled) {
@@ -119,5 +119,5 @@ void Controls::process() {
         }
     }
 
-    drive->setDrive(units::velocity::meters_per_second_t(-finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation));
+    drive->setDrive(units::velocity::meters_per_second_t(-finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation)/*, isFieldCentric*/);
 }

@@ -15,4 +15,4 @@
 #define SWERVE_BR_ROT_CAN_CODER 13
 #define SWERVE_FR_ROT_CAN_CODER 10
 
-// #define ANALOG_GYRO 12
+#define ANALOG_GYRO 0
