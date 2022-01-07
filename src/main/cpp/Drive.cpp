@@ -5,11 +5,11 @@
 #include <stdio.h>
 
 Drive::Drive() {
-  imu.Reset();
-  // Configure the calibration time to 8 seconds.
-  imu.ConfigCalTime(frc::ADIS16470CalibrationTime::_8s);
-  // Set axis for the gryo to take.
-  imu.SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ); // TODO Test to make sure Z axis is up and down.
+  resetIMU();
+  // Configure the calibration time to 4 seconds.
+  imu.ConfigCalTime(frc::ADIS16470CalibrationTime::_4s);
+  // Set axis for the gryo to take (Z is up and down).
+  imu.SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
   // Calibrate the IMU.
   calibrateIMU();
 }
@@ -48,13 +48,11 @@ void Drive::process() {
 }
 
 frc::Rotation2d Drive::getRotation() {
-  double rotation = 0;//std::fmod(imu.GetAngle(), 360);
-  
-  double absRotation = std::abs(rotation);
+  double absRotation = std::abs(targetRotation);
   if(absRotation > 180)
-    rotation -= 360 * (std::signbit(absRotation) ? -1 : 1);
+    targetRotation -= 360 * (std::signbit(absRotation) ? -1 : 1);
   
-  return frc::Rotation2d(units::degree_t(rotation));
+  return frc::Rotation2d(units::degree_t(targetRotation));
 }
 
 void Drive::updateOdometry() {
@@ -72,6 +70,14 @@ frc::Pose2d Drive::getPoseMeters() {
 void Drive::resetSwerveEncoders() {
   for(SwerveModule* module : swerveModules)
     module->resetEncoders();
+}
+
+void Drive::zeroRotation() {
+  targetRotation = std::fmod(imu.GetAngle(), 360);
+}
+
+void Drive::resetIMU() {
+  imu.Reset();
 }
 
 void Drive::calibrateIMU() {

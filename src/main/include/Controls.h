@@ -5,7 +5,7 @@
 #include <frc/XboxController.h>
 #include <ctre/phoenix/music/Orchestra.h>
 
-// #define ENABLE_MUSIC
+#define ENABLE_MUSIC
 
 class Controls{
 public:
@@ -14,7 +14,7 @@ public:
     
     Drive* drive; 
     frc::Joystick controllerDriver {0};
-private:
+// private:
     bool wasDriveModeToggled = false;
     bool isFieldCentric = false;
     

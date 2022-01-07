@@ -19,7 +19,7 @@
 #define RIGHT_Y_AXIS  5 // GetRawAxis() give double
 #define DPAD          0 // GetPOV() give int
 
-#define AXIS_DEADZONE .15
+#define AXIS_DEADZONE .3
 
 Controls::Controls(Drive* drive) : drive(drive) {
 #ifdef ENABLE_MUSIC
@@ -30,6 +30,8 @@ Controls::Controls(Drive* drive) : drive(drive) {
 }
 
 void Controls::process() {
+    bool zeroRotation            = controllerDriver.GetRawButton(Y_BUTTON);
+    bool resetIMU                = controllerDriver.GetRawButton(B_BUTTON);
     bool toggleDriveMode         = controllerDriver.GetRawButton(X_BUTTON);
     double xAxisVelocity         = controllerDriver.GetRawAxis(LEFT_X_AXIS);
     double yAxisVelocity         = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
@@ -39,6 +41,7 @@ void Controls::process() {
     bool slowLeftVelocity        = controllerDriver.GetRawButton(LEFT_BUMPER);
     bool slowRightVelocity       = controllerDriver.GetRawButton(RIGHT_BUMPER);
 #ifdef ENABLE_MUSIC
+    bool toggleMusic             = controllerDriver.GetRawButton(A_BUTTON);
     if(toggleMusic) {
         if(!wasMusicToggled) {
             playMusic = !playMusic;
@@ -49,7 +52,7 @@ void Controls::process() {
     bool isMusicPlaying = orchestra.IsPlaying();
     if(playMusic) {
         if(!isMusicPlaying) {
-            orchestra.LoadMusic("home_depo.chrp");
+            orchestra.LoadMusic("home_depo_long.chrp");
             orchestra.Play();
         }
         return;
@@ -59,6 +62,13 @@ void Controls::process() {
         }
     }
 #endif
+
+    if(zeroRotation) {
+        drive->zeroRotation();
+    }
+    if(resetIMU) {
+        drive->resetIMU();
+    }
 
     if(toggleDriveMode) {
         if(!wasDriveModeToggled) {
@@ -118,5 +128,5 @@ void Controls::process() {
         }
     }
 
-    drive->setDrive(units::velocity::meters_per_second_t(-finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation)/*, isFieldCentric*/);
+    drive->setDrive(units::velocity::meters_per_second_t(-finalXAxis), units::velocity::meters_per_second_t(finalYAxis), units::radians_per_second_t(finalRotation), isFieldCentric);
 }
