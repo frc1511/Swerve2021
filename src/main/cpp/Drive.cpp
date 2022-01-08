@@ -47,12 +47,16 @@ void Drive::process() {
   updateOdometry();
 }
 
+#define FROM_360_TO_PLUS_MINUS_180(rotation) \
+  (abs(rotation) > 180 ? rotation - 360 * (std::signbit(rotation) ? -1 : 1) : rotation)
+
 frc::Rotation2d Drive::getRotation() {
-  double absRotation = std::abs(targetRotation);
-  if(absRotation > 180)
-    targetRotation -= 360 * (std::signbit(absRotation) ? -1 : 1);
+  double angle = std::fmod(imu.GetAngle(), 360);
   
-  return frc::Rotation2d(units::degree_t(targetRotation));
+  // The rotation is the change of the imu's angle since it's last reset.
+  double rotation = -FROM_360_TO_PLUS_MINUS_180(angle);
+  
+  return frc::Rotation2d(units::degree_t(rotation));
 }
 
 void Drive::updateOdometry() {
@@ -70,10 +74,6 @@ frc::Pose2d Drive::getPoseMeters() {
 void Drive::resetSwerveEncoders() {
   for(SwerveModule* module : swerveModules)
     module->resetEncoders();
-}
-
-void Drive::zeroRotation() {
-  targetRotation = std::fmod(imu.GetAngle(), 360);
 }
 
 void Drive::resetIMU() {

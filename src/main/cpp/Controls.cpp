@@ -31,7 +31,6 @@ Controls::Controls(Drive* drive) : drive(drive) {
 
 void Controls::process() {
     bool zeroRotation            = controllerDriver.GetRawButton(Y_BUTTON);
-    bool resetIMU                = controllerDriver.GetRawButton(B_BUTTON);
     bool toggleDriveMode         = controllerDriver.GetRawButton(X_BUTTON);
     double xAxisVelocity         = controllerDriver.GetRawAxis(LEFT_X_AXIS);
     double yAxisVelocity         = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
@@ -64,9 +63,6 @@ void Controls::process() {
 #endif
 
     if(zeroRotation) {
-        drive->zeroRotation();
-    }
-    if(resetIMU) {
         drive->resetIMU();
     }
 

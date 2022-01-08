@@ -68,11 +68,6 @@ public:
   void resetSwerveEncoders();
   
   /**
-   * 
-   */
-  void zeroRotation();
-
-  /**
    * Resets the angle of the IMU.
    */
   void resetIMU();
@@ -121,6 +116,4 @@ public:
    * The ADIS16470 IMU
    */
   frc::ADIS16470_IMU imu {};
-
-  double targetRotation = 0;
 };
