@@ -54,7 +54,7 @@ frc::Rotation2d Drive::getRotation() {
   double angle = std::fmod(imu.GetAngle(), 360);
   
   // The rotation is the change of the imu's angle since it's last reset.
-  double rotation = -FROM_360_TO_PLUS_MINUS_180(angle);
+  double rotation = FROM_360_TO_PLUS_MINUS_180(angle);
   
   return frc::Rotation2d(units::degree_t(rotation));
 }
