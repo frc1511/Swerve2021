@@ -7,7 +7,7 @@
 
 #define ENABLE_MUSIC
 
-class Controls{
+class Controls {
 public:
     Controls(Drive* drive);
     void process();
@@ -17,6 +17,8 @@ public:
 // private:
     bool wasDriveModeToggled = false;
     bool isFieldCentric = false;
+    bool wasSlowModeToggled = false;
+    bool slowModeEnabled = false;
     
 #ifdef ENABLE_MUSIC
     bool wasMusicToggled = false;

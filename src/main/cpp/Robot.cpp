@@ -10,8 +10,6 @@ void Robot::AutonomousPeriodic() { }
 void Robot::TeleopInit() { }
 void Robot::TeleopPeriodic() {
   controls.process();
-  // printf("%s: %f\n", controls.isFieldCentric ? "field-centric" : "robot-centric", fmod(controls.drive->imu.GetAngle(), 360));
-  printf("%s: %f\n", controls.isFieldCentric ? "field-centric" : "robot-centric", drive.imu.GetAngle());
 }
 
 void Robot::DisabledInit() { }

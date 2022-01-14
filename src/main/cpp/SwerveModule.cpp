@@ -48,6 +48,8 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   driveMotor.Config_kD(0, DRIVE_D_VALUE);
   driveMotor.Config_IntegralZone(0, DRIVE_I_ZONE_VALUE);
   driveMotor.Config_kF(0, DRIVE_FF_VALUE);
+  driveMotor.ConfigOpenloopRamp(0.5);
+  driveMotor.ConfigClosedloopRamp(0.5);
   
   turningMotor.RestoreFactoryDefaults();
   turningMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);

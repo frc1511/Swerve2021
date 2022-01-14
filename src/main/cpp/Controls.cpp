@@ -19,7 +19,7 @@
 #define RIGHT_Y_AXIS  5 // GetRawAxis() give double
 #define DPAD          0 // GetPOV() give int
 
-#define AXIS_DEADZONE .3
+#define AXIS_DEADZONE .05
 
 Controls::Controls(Drive* drive) : drive(drive) {
 #ifdef ENABLE_MUSIC
@@ -39,6 +39,7 @@ void Controls::process() {
     int slowDriveDirection       = controllerDriver.GetPOV(DPAD);
     bool slowLeftVelocity        = controllerDriver.GetRawButton(LEFT_BUMPER);
     bool slowRightVelocity       = controllerDriver.GetRawButton(RIGHT_BUMPER);
+    bool toggleSlowMode          = controllerDriver.GetRawButton(B_BUTTON);
 #ifdef ENABLE_MUSIC
     bool toggleMusic             = controllerDriver.GetRawButton(A_BUTTON);
     if(toggleMusic) {
@@ -73,17 +74,34 @@ void Controls::process() {
     }
     wasDriveModeToggled = toggleDriveMode;
 
+    if(toggleSlowMode) {
+        if(!wasSlowModeToggled) {
+            slowModeEnabled = !slowModeEnabled;
+        }
+    }
+    wasSlowModeToggled = toggleSlowMode;
+
     double finalXAxis = 0.0;
     double finalYAxis = 0.0;
     double finalRotation = 0.0;
 
     // DPad not pressed, so normal mode.
     if(slowDriveDirection == -1) {
-        if(abs(xAxisVelocity) > AXIS_DEADZONE) {
-            finalXAxis = xAxisVelocity;
+        if(slowModeEnabled){
+            if(abs(xAxisVelocity) > AXIS_DEADZONE) {
+                finalXAxis = (.2 * xAxisVelocity);
+            }
+            if(abs(yAxisVelocity) > AXIS_DEADZONE) {
+                finalYAxis = (.2 * yAxisVelocity);
+            }
         }
-        if(abs(yAxisVelocity) > AXIS_DEADZONE) {
-            finalYAxis = yAxisVelocity;
+        else{
+            if(abs(xAxisVelocity) > AXIS_DEADZONE) {
+                finalXAxis = xAxisVelocity;
+            }
+            if(abs(yAxisVelocity) > AXIS_DEADZONE) {
+                finalYAxis = yAxisVelocity;
+            }
         }
     }
     // DPad is pressed, so slow mode.
@@ -116,11 +134,21 @@ void Controls::process() {
     }
     // Bumper not pressed, so normal mode.
     else {
-        if((leftRotationVelocity > 0) && (rightRotationVelocity == 0)) {
-            finalRotation = -leftRotationVelocity;
+        if(slowModeEnabled){
+            if((leftRotationVelocity > 0) && (rightRotationVelocity == 0)) {
+                finalRotation = -(.3 * leftRotationVelocity);
+            }
+            if((rightRotationVelocity > 0) && (leftRotationVelocity == 0)) {
+                finalRotation = (.3 * rightRotationVelocity);
+            }
         }
-        if((rightRotationVelocity > 0) && (leftRotationVelocity == 0)) {
-            finalRotation = rightRotationVelocity;
+        else{
+            if((leftRotationVelocity > 0) && (rightRotationVelocity == 0)) {
+                finalRotation = -leftRotationVelocity;
+            }
+            if((rightRotationVelocity > 0) && (leftRotationVelocity == 0)) {
+                finalRotation = rightRotationVelocity;
+            }
         }
     }
 
