@@ -14,6 +14,10 @@
  */
 class SwerveModule {
 public:
+  /**
+   * Constructs a swerve module object. Requires the channels of the drive motor, turning motor, and
+   * CANCoder, as well as the turning offset of the CANCoder.
+   */
   SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double turningOffset);
   ~SwerveModule();
   
@@ -29,14 +33,13 @@ public:
 
   /**
    * Resets the encoders of the swerve module.
-   * TODO Make button to do this.
    */
   void resetEncoders();
   
   /**
-   * Sets the mode and mode value of the swerve module's drive motor.
+   * Sets the swerve module's drive motor to a specified speed.
    */
-  void setDriveMotor(ControlMode controlMode, double value);
+  void setDriveMotor(double speed);
   
   /**
    * Sets the rotation of the swerve module's turning motor.
@@ -49,12 +52,12 @@ public:
   double getVelocity();
   
   /**
-   * Returns the current rotation of the CANcoder.
+   * Returns the current value of the CANcoder.
    */
   units::radian_t getAbsoluteRotation();
   
   /**
-   * Returns the current rotation of the NEO 550.
+   * Returns the current encoder value of the NEO 550 turning motor.
    */
   double getRelativeRotation();
 
@@ -63,24 +66,29 @@ public:
   const int canCoderChannel;
   
   /**
-   * Falcon 500
-   * Swerve module drive motor.
+   * NEO Brushless motor.
+   * The drive motor of the swerve module.
    */
-  TalonFX driveMotor;
+  rev::CANSparkMax driveMotor;
+  rev::CANEncoder driveEncoder; // TODO Switch to rev::SparkMaxRelativeEncoder for 2022.
+  rev::CANPIDController drivePID;
   
   /**
-   * NEO 550
-   * The swerve module's turning motor.
+   * NEO 550.
+   * The turning motor of the swerve module.
    */
   rev::CANSparkMax turningMotor;
   rev::CANEncoder turningRelEncoder;
   rev::CANPIDController turningPID;
   
   /**
-   * CANcoder
-   * The swerve module's magnetic encoder.
+   * CTRE CANcoder.
+   * The magnetic encoder of the swerve module (used to read the absolute rotation).
    */
   CANCoder turningAbsSensor;
   
+  /**
+   * The offset of the CANCoder value.
+   */
   const units::radian_t turningOffset;
 };

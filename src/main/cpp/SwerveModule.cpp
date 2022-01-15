@@ -4,17 +4,23 @@
 #include <cmath>
 #include <stdio.h>
 
+// The coefficient used to convert the internal drive encoder value to meters (Drive motor) (TODO Change for NEOs).
 #define DRIVE_ENC_TO_METERS_FACTOR 0.00002226
+
+// The coeffieient used to convert a radian value to internal encoder value (Turning motor).
 #define RAD_TO_ENC_FACTOR 10.1859
 
-#define DRIVE_MAX_VOLTAGE 12
-#define ROT_MAX_VOLTAGE 12
+// Max voltage.
+#define MAX_VOLTAGE 12
 
+// --- PID values ---
+
+// TODO Change PID values for NEOs.
 #define DRIVE_P_VALUE 1000
 #define DRIVE_I_VALUE 0
 #define DRIVE_D_VALUE 25
 #define DRIVE_I_ZONE_VALUE 0
-#define DRIVE_FF_VALUE 1023/(DRIVE_MAX_VOLTAGE/DRIVE_ENC_TO_METERS_FACTOR)
+#define DRIVE_FF_VALUE 1023/(MAX_VOLTAGE/DRIVE_ENC_TO_METERS_FACTOR)
 
 #define ROT_P_VALUE 0.4
 #define ROT_I_VALUE 0
@@ -26,42 +32,51 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   driveMotorChannel(driveMotorChannel),
   turningMotorChannel(turningMotorChannel),
   canCoderChannel(canCoderChannel),
-  driveMotor(driveMotorChannel),
+  driveMotor(driveMotorChannel, rev::CANSparkMax::MotorType::kBrushless),
+  driveEncoder(driveMotor.GetEncoder()),
+  drivePID(driveMotor.GetPIDController()),
   turningMotor(turningMotorChannel, rev::CANSparkMax::MotorType::kBrushless),
   turningRelEncoder(turningMotor.GetEncoder()),
   turningPID(turningMotor.GetPIDController()),
   turningAbsSensor(canCoderChannel),
   turningOffset(turningOffset) {
   
-  driveMotor.ConfigFactoryDefault();
-  driveMotor.SetNeutralMode(NeutralMode::Brake);
-  driveMotor.ConfigVoltageCompSaturation(DRIVE_MAX_VOLTAGE);
-  driveMotor.EnableVoltageCompensation(true);
-  driveMotor.ConfigSelectedFeedbackSensor(TalonFXFeedbackDevice::IntegratedSensor, 0, 0);
-  driveMotor.ConfigSelectedFeedbackCoefficient(DRIVE_ENC_TO_METERS_FACTOR);
+  // --- Drive motor config ---
+  
+  driveMotor.RestoreFactoryDefaults();
+  // Brake when idle.
+  driveMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  driveMotor.EnableVoltageCompensation(MAX_VOLTAGE);
+  // Limit in amps (Always when using NEO Brushless to avoid damage).
+  driveMotor.SetSmartCurrentLimit(30);
   driveMotor.SetInverted(false);
-  driveMotor.SetStatusFramePeriod(StatusFrameEnhanced::Status_1_General, 10);
-  driveMotor.SetStatusFramePeriod(StatusFrameEnhanced::Status_2_Feedback0, 10);
-  driveMotor.SetSelectedSensorPosition(0);
-  driveMotor.Config_kP(0, DRIVE_P_VALUE);
-  driveMotor.Config_kI(0, DRIVE_I_VALUE);
-  driveMotor.Config_kD(0, DRIVE_D_VALUE);
-  driveMotor.Config_IntegralZone(0, DRIVE_I_ZONE_VALUE);
-  driveMotor.Config_kF(0, DRIVE_FF_VALUE);
-  driveMotor.ConfigOpenloopRamp(0.5);
-  driveMotor.ConfigClosedloopRamp(0.5);
+  // Ramping (0.5 seconds to accelerate from neutral to full throttle).
+  driveMotor.SetClosedLoopRampRate(0.5);
+  // TODO Feedback coefficient.
+  // TODO Frame period.
+  // PID Values.
+  drivePID.SetP(DRIVE_P_VALUE, 0);
+  drivePID.SetI(DRIVE_I_VALUE, 0);
+  drivePID.SetD(DRIVE_D_VALUE, 0);
+  drivePID.SetIZone(DRIVE_I_ZONE_VALUE, 0);
+  drivePID.SetFF(DRIVE_FF_VALUE, 0);
+
+  // --- Turning motor config ---
   
   turningMotor.RestoreFactoryDefaults();
   turningMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-  turningMotor.EnableVoltageCompensation(ROT_MAX_VOLTAGE);
+  turningMotor.EnableVoltageCompensation(MAX_VOLTAGE);
   turningMotor.SetSmartCurrentLimit(30);
   turningMotor.SetInverted(true);
   turningPID.SetFeedbackDevice(turningRelEncoder);
+  // PID values.
   turningPID.SetP(ROT_P_VALUE, 0);
   turningPID.SetI(ROT_I_VALUE, 0);
   turningPID.SetD(ROT_D_VALUE, 0);
   turningPID.SetIZone(ROT_I_ZONE_VALUE, 0);
   turningPID.SetFF(ROT_FF_VALUE, 0);
+  
+  // --- CANCoder config ---
   
   turningAbsSensor.ConfigAbsoluteSensorRange(AbsoluteSensorRange::Signed_PlusMinus180);
 }
@@ -71,15 +86,19 @@ SwerveModule::~SwerveModule() = default;
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
   frc::SwerveModuleState currentState = getState();
 
-  // Optimize the target state using the current angle.
+  /**
+   * Optimize the target state using the current angle of the module.
+   * 
+   * Optimize() will optimize the target state by flipping motor directions and
+   * rotations in order to turn the least amount of distance possible.
+   */
   frc::SwerveModuleState optimizedState = frc::SwerveModuleState::Optimize(targetState, currentState.angle);
   
-  if(units::math::abs(optimizedState.speed) > 0.01_mps)
-    // Rotate the swerve module.
-    setTurningMotor(optimizedState.angle.Radians());  
+  // Rotate the swerve module.
+  setTurningMotor(optimizedState.angle.Radians());
 
   // Set the drive motor's velocity.
-  setDriveMotor(ControlMode::PercentOutput, optimizedState.speed.value());
+  setDriveMotor(optimizedState.speed.value());
 }
 
 frc::SwerveModuleState SwerveModule::getState() {
@@ -93,21 +112,25 @@ void SwerveModule::resetEncoders() {
   turningAbsSensor.ConfigMagnetOffset(config.magnetOffsetDegrees - turningAbsSensor.GetAbsolutePosition());
 }
 
-void SwerveModule::setDriveMotor(ControlMode controlMode, double value) {
-  driveMotor.Set(controlMode, value);
+void SwerveModule::setDriveMotor(double speed) {
+  driveMotor.Set(speed);
 }
 
 void SwerveModule::setTurningMotor(units::radian_t radians) {
+  // Subtract the absolute rotation from the target rotation.
   units::radian_t rotation(radians - getAbsoluteRotation());
-  units::radian_t absRotation(units::math::abs(rotation));
   
   // Fix the discontinuity problem.
   // If the value is above π rad or below -π rad...
-  if(absRotation.value() > wpi::math::pi)
+  if(units::math::abs(rotation).value() > wpi::math::pi) {
     // Subtract 2π rad, or add 2π rad depending on the sign.
     rotation = units::radian_t(rotation.value() - (2 * wpi::math::pi) * (std::signbit(rotation.value()) ? -1 : 1));
+  }
   
+  // Convert the radian value to internal encoder value.
   double output = rotation.value() * RAD_TO_ENC_FACTOR;
+  
+  // Add the current relative rotation.
   output += getRelativeRotation();
   
   // Set PID controller reference.
@@ -115,7 +138,7 @@ void SwerveModule::setTurningMotor(units::radian_t radians) {
 }
 
 double SwerveModule::getVelocity() {
-  return driveMotor.GetSelectedSensorVelocity();
+  return driveEncoder.GetVelocity();
 }
 
 units::radian_t SwerveModule::getAbsoluteRotation() {
