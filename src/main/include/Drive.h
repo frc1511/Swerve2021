@@ -63,11 +63,6 @@ public:
   frc::Pose2d getPoseMeters();
   
   /**
-   * Resets the encoders on the swerve modules.
-   */
-  void resetSwerveEncoders();
-  
-  /**
    * Resets the angle of the IMU.
    */
   void resetIMU();

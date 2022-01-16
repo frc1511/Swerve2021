@@ -71,11 +71,6 @@ frc::Pose2d Drive::getPoseMeters() {
   return odometry.GetPose();
 }
 
-void Drive::resetSwerveEncoders() {
-  for(SwerveModule* module : swerveModules)
-    module->resetEncoders();
-}
-
 void Drive::resetIMU() {
   imu.Reset();
 }
