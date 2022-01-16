@@ -21,13 +21,7 @@
 
 #define AXIS_DEADZONE .05
 
-Controls::Controls(Drive* drive) : drive(drive) {
-#ifdef ENABLE_MUSIC
-    for(unsigned i = 0; i < drive->swerveModules.size(); ++i) {
-        orchestra.AddInstrument(drive->swerveModules[i]->driveMotor);
-    }
-#endif
-}
+Controls::Controls(Drive* drive) : drive(drive) { }
 
 void Controls::process() {
     bool zeroRotation            = controllerDriver.GetRawButton(Y_BUTTON);
@@ -40,28 +34,6 @@ void Controls::process() {
     bool slowLeftVelocity        = controllerDriver.GetRawButton(LEFT_BUMPER);
     bool slowRightVelocity       = controllerDriver.GetRawButton(RIGHT_BUMPER);
     bool toggleSlowMode          = controllerDriver.GetRawButton(B_BUTTON);
-#ifdef ENABLE_MUSIC
-    bool toggleMusic             = controllerDriver.GetRawButton(A_BUTTON);
-    if(toggleMusic) {
-        if(!wasMusicToggled) {
-            playMusic = !playMusic;
-        }
-    }
-    wasMusicToggled = toggleMusic;
-    
-    bool isMusicPlaying = orchestra.IsPlaying();
-    if(playMusic) {
-        if(!isMusicPlaying) {
-            orchestra.LoadMusic("home_depo_long.chrp");
-            orchestra.Play();
-        }
-        return;
-    } else {
-        if(isMusicPlaying) {
-            orchestra.Stop();
-        }
-    }
-#endif
 
     if(zeroRotation) {
         drive->resetIMU();
