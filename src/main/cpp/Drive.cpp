@@ -19,51 +19,61 @@ Drive::~Drive() {
     delete module;
 }
 
-void Drive::setDrive(frc::ChassisSpeeds chassisSpeeds) {
-  // Get target states.
+void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
+  /**
+   * Generate module states using chassis velocities.
+   * The magic function of swerve drive.
+   */
   wpi::array<frc::SwerveModuleState, 4> moduleStates = kinematics.ToSwerveModuleStates(chassisSpeeds);
   
-  // Normalize speeds relative to max speed.
+  // Recalculate wheel speeds relative to the max speed.
   kinematics.NormalizeWheelSpeeds(&moduleStates, maxSpeed);
-  // Set module states.
+  
+  // Set the module states.
   for(unsigned i = 0; i < swerveModules.size(); i++) {
     swerveModules.at(i)->setState(moduleStates.at(i));
   }
 }
 
-void Drive::setDrive(units::velocity::meters_per_second_t xVelMeters,
-                     units::velocity::meters_per_second_t yVelMeters,
-                     units::degrees_per_second_t degreesPerSecond,
-                     bool isFieldCentric) {
-  if(isFieldCentric)
-    // Create relative chassis speeds struct from parameters, then call the other setDrive function.
-    setDrive(frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVelMeters, yVelMeters, units::radians_per_second_t(degreesPerSecond), getRotation()));
-  else
-    // Create chassis speeds struct from parameters, then call the other setDrive function.
-    setDrive({ xVelMeters, yVelMeters, units::radians_per_second_t(degreesPerSecond) });
+void Drive::setDrive(double xVel, double yVel, double rotVel, bool isFieldCentric) {
+  if(isFieldCentric) {
+    // Generate relative chassis speeds from velocities based on the robot's current rotation on the field.
+    setModuleStates(frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::degrees_per_second_t(rotVel), getRotation()));
+  }
+  else {
+    // Directly use velocities for robot-centric control.
+    setModuleStates({ units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::degrees_per_second_t(rotVel) });
+  }
 }
 
 void Drive::process() {
   updateOdometry();
 }
 
-#define FROM_360_TO_PLUS_MINUS_180(rotation) \
-  (abs(rotation) > 180 ? rotation - 360 * (std::signbit(rotation) ? -1 : 1) : rotation)
-
 frc::Rotation2d Drive::getRotation() {
   double angle = std::fmod(imu.GetAngle(), 360);
   
-  // The rotation is the change of the imu's angle since it's last reset.
-  double rotation = FROM_360_TO_PLUS_MINUS_180(angle);
+  double rotation = angle;
+  
+  // Convert -360 to 360 value into -180 to 180 value.
+  if(abs(rotation) > 180) {
+    rotation -= (360 * (std::signbit(rotation) ? -1 : 1));
+  }
   
   return frc::Rotation2d(units::degree_t(rotation));
 }
 
 void Drive::updateOdometry() {
-  odometry.Update(getRotation(), swerveModules.at(0)->getState(), swerveModules.at(1)->getState(), swerveModules.at(2)->getState(), swerveModules.at(3)->getState());
+  // Update the position and rotation on the field.
+  odometry.Update(getRotation(),
+    swerveModules.at(0)->getState(),
+    swerveModules.at(1)->getState(),
+    swerveModules.at(2)->getState(),
+    swerveModules.at(3)->getState());
 }
 
 void Drive::resetOdometry(frc::Pose2d pose) {
+  // Reset the position on the field.
   odometry.ResetPosition(pose, getRotation());
 }
 
