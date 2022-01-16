@@ -30,11 +30,6 @@ public:
    * Returns the current state of the swerve module.
    */
   frc::SwerveModuleState getState();
-
-  /**
-   * Resets the encoders of the swerve module.
-   */
-  void resetEncoders();
   
   /**
    * Sets the swerve module's drive motor to a specified speed.
@@ -60,11 +55,15 @@ public:
    * Returns the current encoder value of the NEO 550 turning motor.
    */
   double getRelativeRotation();
-
+  
+private:
+  /**
+   * The channels of the motors and encoders.
+   */
   const int driveMotorChannel;
   const int turningMotorChannel;
   const int canCoderChannel;
-  
+
   /**
    * NEO Brushless motor.
    * The drive motor of the swerve module.
