@@ -20,6 +20,7 @@ Drive::~Drive() {
 }
 
 void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
+  printf("rotation: %f\n", chassisSpeeds.omega.value());
   /**
    * Generate module states using chassis velocities.
    * The magic function of swerve drive.
@@ -38,11 +39,11 @@ void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
 void Drive::setDrive(double xVel, double yVel, double rotVel, bool isFieldCentric) {
   if(isFieldCentric) {
     // Generate relative chassis speeds from velocities based on the robot's current rotation on the field.
-    setModuleStates(frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::degrees_per_second_t(rotVel), getRotation()));
+    setModuleStates(frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel), getRotation()));
   }
   else {
     // Directly use velocities for robot-centric control.
-    setModuleStates({ units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::degrees_per_second_t(rotVel) });
+    setModuleStates({ units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel) });
   }
 }
 

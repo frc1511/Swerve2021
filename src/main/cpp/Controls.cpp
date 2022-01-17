@@ -19,7 +19,7 @@
 #define RIGHT_Y_AXIS  5 // GetRawAxis() give double
 #define DPAD          0 // GetPOV() give int
 
-#define AXIS_DEADZONE .05
+#define AXIS_DEADZONE .25
 
 Controls::Controls(Drive* drive) : drive(drive) { }
 

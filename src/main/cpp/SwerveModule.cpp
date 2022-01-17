@@ -8,7 +8,7 @@
 #define WHEEL_CIRCUMFERENCE 0.21
 
 // The value of the encoder after 1 rotation.
-#define WHEEL_1_ROT_ENC_VAL 360
+#define WHEEL_1_ROT_ENC_VAL 1
 
 // The coefficient used to convert the internal drive encoder value to meters (Drive motor).
 #define DRIVE_ENC_TO_METERS_FACTOR (WHEEL_CIRCUMFERENCE / WHEEL_1_ROT_ENC_VAL)
@@ -51,13 +51,14 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   
   driveMotor.RestoreFactoryDefaults();
   // Brake when idle.
-  driveMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
+  driveMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
   driveMotor.EnableVoltageCompensation(MAX_VOLTAGE);
   // Limit in amps (Always when using NEO Brushless to avoid damage).
   driveMotor.SetSmartCurrentLimit(40);
   driveMotor.SetInverted(false);
   // Ramping (0.5 seconds to accelerate from neutral to full throttle).
   driveMotor.SetClosedLoopRampRate(0.5);
+  driveMotor.SetOpenLoopRampRate(0.5);
   // Frame period.
   driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus0, 10);
   driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus1, 10);
