@@ -34,15 +34,33 @@ public:
     On = 3,
   };
 
+  /**
+   * @brief  Sets the LED mode.
+   * 
+   * @param mode  The mode to switch to.
+   */
   void setLEDMode(LEDMode mode);
+
+  /**
+   * @brief  Returns the current LED mode.
+   */
   LEDMode getLEDMode();
 
   enum CameraMode {
     VisionProcess = 0,
     DriverCamera = 1,
-  }
+  };
 
+  /**
+   * @brief  Sets the camera mode.
+   * 
+   * @param mode  The mode to switch to.
+   */
   void setCameraMode(CameraMode mode);
+  
+  /**
+   * @brief  Returns the current camera mode.
+   */
   CameraMode getCameraMode();
   
 private:
