@@ -10,6 +10,7 @@ void Robot::AutonomousPeriodic() { }
 void Robot::TeleopInit() { }
 void Robot::TeleopPeriodic() {
   controls.process();
+  printf("horizontal: %f, vertical: %f\n", limelight.getAngleHorizontal(), limelight.getAngleVertical());
 }
 
 void Robot::DisabledInit() { }
