@@ -89,14 +89,8 @@ SwerveModule::SwerveModule(int driveMotorChannel, int turningMotorChannel, int c
   
   // --- CANCoder config ---
   
+  
   turningAbsSensor.ConfigAbsoluteSensorRange(AbsoluteSensorRange::Signed_PlusMinus180);
-  
-  /*
-  CANCoderConfiguration config;
-  turningAbsSensor.GetAllConfigs(config);
-  
-  turningAbsSensor.ConfigMagnetOffset(config.magnetOffsetDegrees - turningAbsSensor.GetAbsolutePosition());
-  */
 }
 
 SwerveModule::~SwerveModule() = default;

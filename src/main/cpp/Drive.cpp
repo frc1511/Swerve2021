@@ -20,7 +20,6 @@ Drive::~Drive() {
 }
 
 void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
-  printf("rotation: %f\n", chassisSpeeds.omega.value());
   /**
    * Generate module states using chassis velocities.
    * The magic function of swerve drive.
