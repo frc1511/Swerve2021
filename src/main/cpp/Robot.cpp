@@ -4,20 +4,29 @@
 void Robot::RobotInit() { }
 void Robot::RobotPeriodic() { }
 
-void Robot::AutonomousInit() { }
-void Robot::AutonomousPeriodic() { }
+void Robot::AutonomousInit() {
+  drive.cmdRotate(3.41_rad);
+}
+
+void Robot::AutonomousPeriodic() {
+  drive.process();
+}
 
 void Robot::TeleopInit() { }
 void Robot::TeleopPeriodic() {
   controls.process();
+  drive.process();
   printf("horizontal: %f, vertical: %f\n", limelight.getAngleHorizontal(), limelight.getAngleVertical());
 }
 
 void Robot::DisabledInit() { }
 void Robot::DisabledPeriodic() { }
 
-void Robot::TestInit() { }
-void Robot::TestPeriodic() { 
+void Robot::TestInit() {
+  TeleopInit();
+}
+
+void Robot::TestPeriodic() {
   TeleopPeriodic();
 }
 

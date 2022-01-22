@@ -8,6 +8,9 @@
 #include "frc/kinematics/SwerveDriveKinematics.h"
 #include "frc/kinematics/SwerveDriveOdometry.h"
 #include "frc/kinematics/ChassisSpeeds.h"
+#include "frc/trajectory/Trajectory.h"
+#include "frc/controller/HolonomicDriveController.h"
+#include "frc/Timer.h"
 #include "adi/ADIS16470_IMU.h"
 #include "wpi/array.h"
 #include "wpi/math"
@@ -81,6 +84,39 @@ public:
    * @brief  Calibrates the IMU.
    */
   void calibrateIMU();
+  
+  /**
+   * @brief  Begins a command to rotate a specified angle.
+   * 
+   * @param angle  The angle to rotate.
+   */
+  void cmdRotate(frc::Rotation2d angle);
+
+  /**
+   * @brief  Begins a command to drive a specified distance.
+   * 
+   * @param x  The amount of meters to move in the x direction.
+   * @param y  The amount of meters to move in the x direction.
+   * @param angle  The angle to rotate.
+   */
+  void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d());
+
+  /**
+   * @brief  Begins a command to drive a specified trajectory.
+   * 
+   * @param trajectory  The trajectory to follow.
+   */
+  void cmdTrajectory(frc::Trajectory trajectory);
+
+  /**
+   * @brief  Returns whether the last command has finished.
+   */
+  bool cmdIsFinished();
+
+  /**
+   * @brief  Cancels the current command.
+   */
+  void cmdCancel();
 
 private:
 
@@ -108,4 +144,16 @@ private:
   
   // The ADIS16470 IMU (3D gyro and accelerometer).
   frc::ADIS16470_IMU imu {};
+  
+  // The trajectory tracker used to create chassis speeds for a drive command (Input PID values for error correction).
+  frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
+
+  // Whether a drive command is running.
+  bool cmdRunning = false;
+  
+  // The trajectory for a drive command to follow.
+  frc::Trajectory cmdTargetTrajectory;
+  
+  // A timer to time a drive command.
+  frc::Timer cmdTimer {};
 };

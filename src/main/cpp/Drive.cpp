@@ -36,6 +36,9 @@ void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
 }
 
 void Drive::setDrive(double xVel, double yVel, double rotVel, bool isFieldCentric) {
+  // Take control if drive command is running.
+  cmdCancel();
+  
   if(isFieldCentric) {
     // Generate relative chassis speeds from velocities based on the robot's current rotation on the field.
     setModuleStates(frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel), getRotation()));
@@ -48,6 +51,23 @@ void Drive::setDrive(double xVel, double yVel, double rotVel, bool isFieldCentri
 
 void Drive::process() {
   updateOdometry();
+  
+  // If a drive command is executing.
+  if (cmdRunning) {
+    // If the drive command has finished.
+    if (cmdTimer.HasPeriodPassed(cmdTargetTrajectory.TotalTime().value())) {
+      cmdCancel();
+    }
+    // Execute the drive command.
+    else {
+      // Get the current time of the trajectory.
+      units::second_t curTime = units::second_t(cmdTimer.Get());
+      // Sample the state at the current time.
+      frc::Trajectory::State state = cmdTargetTrajectory.Sample(curTime);
+      // Set the swerve modules.
+      setModuleStates(cmdController.Calculate(getPoseMeters(), state, state.pose.Rotation()));
+    }
+  }
 }
 
 frc::Rotation2d Drive::getRotation() {
@@ -87,4 +107,63 @@ void Drive::resetIMU() {
 
 void Drive::calibrateIMU() {
   imu.Calibrate();
+}
+
+void Drive::cmdRotate(frc::Rotation2d angle) {
+  // Cancel a command if running.
+  cmdCancel();
+  cmdRunning = true;
+
+  // Get the current pose of the robot.
+  frc::Pose2d pose = getPoseMeters();
+
+  // Add displacement to current pose.
+  std::vector<frc::Trajectory::State> states { { 0_s, 0_mps, 0_mps_sq, { pose.X(), pose.Y(), pose.Rotation() + angle }, {} } };
+  
+  cmdTargetTrajectory = frc::Trajectory(states);
+  
+  // Start the timer.
+  cmdTimer.Reset();
+  cmdTimer.Start();
+}
+
+void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle) {
+  // Cancel a command if running.
+  cmdCancel();
+  cmdRunning = true;
+  
+  // Get the current pose of the robot.
+  frc::Pose2d pose = getPoseMeters();
+
+  // Add displacement to current pose.
+  std::vector<frc::Trajectory::State> states { { 0_s, 0_mps, 0_mps_sq, { pose.X() + x, pose.Y() + y, pose.Rotation() + angle }, {} } };
+  
+  cmdTargetTrajectory = frc::Trajectory(states);
+  
+  // Start the timer.
+  cmdTimer.Reset();
+  cmdTimer.Start();
+}
+
+void Drive::cmdTrajectory(frc::Trajectory trajectory) {
+  // Cancel a command if running.
+  cmdCancel();
+  cmdRunning = true;
+  
+  cmdTargetTrajectory = trajectory;
+  
+  // Start the timer.
+  cmdTimer.Reset();
+  cmdTimer.Start();
+}
+
+bool Drive::cmdIsFinished() {
+  return !cmdRunning;
+}
+
+void Drive::cmdCancel() {
+  if (!cmdRunning) return;
+  
+  cmdRunning = false;
+  cmdTimer.Stop();
 }
