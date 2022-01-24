@@ -5,10 +5,12 @@ void Robot::RobotInit() { }
 void Robot::RobotPeriodic() { }
 
 void Robot::AutonomousInit() {
-  drive.cmdRotate(3.41_rad);
+  printf("auto???\n");
+  drive.cmdRotate(90_deg);
 }
 
 void Robot::AutonomousPeriodic() {
+  // printf("periodic...\n");
   drive.process();
 }
 

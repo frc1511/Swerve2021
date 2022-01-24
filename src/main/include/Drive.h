@@ -9,11 +9,14 @@
 #include "frc/kinematics/SwerveDriveOdometry.h"
 #include "frc/kinematics/ChassisSpeeds.h"
 #include "frc/trajectory/Trajectory.h"
+#include <frc/trajectory/TrajectoryGenerator.h>
 #include "frc/controller/HolonomicDriveController.h"
+#include <frc2/command/SwerveControllerCommand.h>
 #include "frc/Timer.h"
 #include "adi/ADIS16470_IMU.h"
 #include "wpi/array.h"
 #include "wpi/math"
+#include <optional>
 
 // The width between the the left and right swerve modules (not the robot width).
 #define ROBOT_WIDTH 0.362_m
@@ -118,6 +121,8 @@ public:
    */
   void cmdCancel();
 
+  frc::TrajectoryConfig getTrajectoryConfig();
+
 private:
 
   // The locations of the swerve modules on the robot.
@@ -145,15 +150,5 @@ private:
   // The ADIS16470 IMU (3D gyro and accelerometer).
   frc::ADIS16470_IMU imu {};
   
-  // The trajectory tracker used to create chassis speeds for a drive command (Input PID values for error correction).
-  frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
-
-  // Whether a drive command is running.
-  bool cmdRunning = false;
-  
-  // The trajectory for a drive command to follow.
-  frc::Trajectory cmdTargetTrajectory;
-  
-  // A timer to time a drive command.
-  frc::Timer cmdTimer {};
+  std::optional<frc2::SwerveControllerCommand<4>> cmd = {};
 };
