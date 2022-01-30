@@ -26,6 +26,7 @@ Controls::Controls(Drive* drive) : drive(drive) { }
 void Controls::process() {
     bool resetPosition           = controllerDriver.GetRawButton(Y_BUTTON);
     bool toggleDriveMode         = controllerDriver.GetRawButton(X_BUTTON);
+    bool brickDrive              = controllerDriver.GetRawButton(A_BUTTON);
     double xAxisVelocity         = controllerDriver.GetRawAxis(LEFT_X_AXIS);
     double yAxisVelocity         = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
     double leftRotationVelocity  = controllerDriver.GetRawAxis(LEFT_TRIGGER);
@@ -36,13 +37,13 @@ void Controls::process() {
     bool toggleSlowMode          = controllerDriver.GetRawButton(B_BUTTON);
 
     if(resetPosition) {
-        drive->resetIMU();
-        drive->resetOdometry();
+        drive->zeroRotation();
     }
 
     if(toggleDriveMode) {
         if(!wasDriveModeToggled) {
             isFieldCentric = !isFieldCentric;
+            drive->setControlMode(isFieldCentric ? Drive::FIELD_CENTRIC : Drive::ROBOT_CENTRIC);
         }
     }
     wasDriveModeToggled = toggleDriveMode;
@@ -53,6 +54,10 @@ void Controls::process() {
         }
     }
     wasSlowModeToggled = toggleSlowMode;
+
+    if(brickDrive) {
+        drive->makeBrick();
+    }
 
     double finalXAxis = 0.0;
     double finalYAxis = 0.0;
@@ -125,5 +130,5 @@ void Controls::process() {
         }
     }
 
-    drive->setDrive(-finalXAxis, finalYAxis, finalRotation, isFieldCentric);
+    drive->manualDrive(-finalXAxis, finalYAxis, finalRotation);
 }

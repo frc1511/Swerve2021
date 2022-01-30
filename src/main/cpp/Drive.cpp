@@ -2,143 +2,196 @@
 
 #include "frc/kinematics/SwerveModuleState.h"
 #include <cmath>
-#include <stdio.h>
 
 Drive::Drive() {
-  resetIMU();
-  // Configure the calibration time to 4 seconds.
-  imu.ConfigCalTime(frc::ADIS16470CalibrationTime::_4s);
-  // Set axis for the gryo to take (Z is up and down).
-  imu.SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
-  // Calibrate the IMU.
-  calibrateIMU();
+    resetIMU();
+    // Configure the calibration time to 4 seconds.
+    imu.ConfigCalTime(frc::ADIS16470CalibrationTime::_4s);
+    // Set axis for the gryo to take (Z is up and down).
+    imu.SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
+    // Calibrate the IMU.
+    calibrateIMU();
 }
 
 Drive::~Drive() {
-  for(SwerveModule* module : swerveModules)
-    delete module;
-}
-
-void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
-  /**
-   * Generate module states using chassis velocities.
-   * The magic function of swerve drive.
-   */
-  wpi::array<frc::SwerveModuleState, 4> moduleStates = kinematics.ToSwerveModuleStates(chassisSpeeds);
-  
-  // Recalculate wheel speeds relative to the max speed.
-  kinematics.NormalizeWheelSpeeds(&moduleStates, maxSpeed);
-  
-  // Set the module states.
-  for(unsigned i = 0; i < swerveModules.size(); i++) {
-    swerveModules.at(i)->setState(moduleStates.at(i));
-  }
-}
-
-void Drive::setDrive(double xVel, double yVel, double rotVel, bool isFieldCentric) {
-  // Take control if drive command is running.
-  cmdCancel();
-  
-  if(isFieldCentric) {
-    // Generate relative chassis speeds from velocities based on the robot's current rotation on the field.
-    setModuleStates(frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel), getRotation()));
-  }
-  else {
-    // Directly use velocities for robot-centric control.
-    setModuleStates({ units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel) });
-  }
+    for (SwerveModule* module : swerveModules) {
+        delete module;
+    }
 }
 
 void Drive::process() {
-  updateOdometry();
-  
-  // If a drive command is executing.
-  if (cmd.has_value()) {
-    if (!cmd.value().IsFinished()) {
-      cmd.value().Execute();
-    }
-  }
+    // hi nevin
+    // hi jeff :D
+    // Update the position on the field.
+    updateOdometry();
+
+    // Execute the current command.
+    executeCommand();
 }
 
-frc::Rotation2d Drive::getRotation() {
-  double angle = std::fmod(imu.GetAngle(), 360);
-  
-  double rotation = angle;
-  
-  // Convert -360 to 360 value into -180 to 180 value.
-  if(abs(rotation) > 180) {
-    rotation -= (360 * (std::signbit(rotation) ? -1 : 1));
-  }
-  
-  return frc::Rotation2d(units::degree_t(rotation));
+frc::Pose2d Drive::getPose() {
+    return odometry.GetPose();
 }
 
-void Drive::updateOdometry() {
-  // Update the position and rotation on the field.
-  odometry.Update(getRotation(),
-    swerveModules.at(0)->getState(),
-    swerveModules.at(1)->getState(),
-    swerveModules.at(2)->getState(),
-    swerveModules.at(3)->getState());
-}
-
-void Drive::resetOdometry(frc::Pose2d pose) {
-  // Reset the position on the field.
-  odometry.ResetPosition(pose, getRotation());
-}
-
-frc::Pose2d Drive::getPoseMeters() {
-  return odometry.GetPose();
-}
-
-void Drive::resetIMU() {
-  imu.Reset();
+void Drive::zeroRotation() {
+    resetIMU();
 }
 
 void Drive::calibrateIMU() {
-  imu.Calibrate();
+    imu.Calibrate();
+}
+
+void Drive::setupMagneticEncoders() {
+    for (SwerveModule* module : swerveModules) {
+        module->configOffset();
+    }
+}
+
+void Drive::manualDrive(double xVel, double yVel, double rotVel) {
+    // Take control if drive command is running.
+    cmdCancel();
+    
+    frc::ChassisSpeeds chassisSpeeds;
+
+    // Generate chassis speeds depending on the control mode.
+    switch (controlMode) {
+        case FIELD_CENTRIC:
+            chassisSpeeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel),
+                                                                        units::meters_per_second_t(yVel),
+                                                                        units::radians_per_second_t(rotVel),
+                                                                        getRotation());
+            break;
+        case ROBOT_CENTRIC:
+            chassisSpeeds = {units::meters_per_second_t(xVel),
+                             units::meters_per_second_t(yVel),
+                             units::radians_per_second_t(rotVel)};
+            break;
+    }
+    
+    // Set the modules to turn based on the speeds of the entire chassis.
+    setModuleStates(chassisSpeeds);
+}
+
+void Drive::setControlMode(ControlMode mode) {
+    controlMode = mode;
+}
+
+void Drive::makeBrick() {
+    for (unsigned i = 0; i < swerveModules.size(); i++) {
+        units::degree_t angle;
+        // If even index.
+        if (i % 2 == 0) {
+            angle = -45_deg;
+        }
+        // If odd index.
+        else {
+            angle = 45_deg;
+        }
+        // Turn the swerve module to point towards the center of the robot.
+        swerveModules[i]->setState({ 0_mps, angle });
+    }
 }
 
 void Drive::cmdRotate(frc::Rotation2d angle) {
-  cmdTrajectory(frc::TrajectoryGenerator::GenerateTrajectory(getPoseMeters(), {}, { 0_m, 0_m, angle }, getTrajectoryConfig()));
+    // Create a trajectory to rotate the specified angle.
+    frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+        getPose(), {}, { 0_m, 0_m, angle }, AUTO_TRAJECTORY_CONFIG);
+
+    // Start a follow trajectory command.
+    cmdFollowTrajectory(trajectory);
 }
 
 void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle) {
-  cmdTrajectory(frc::TrajectoryGenerator::GenerateTrajectory(getPoseMeters(), {}, { x, y, angle }, getTrajectoryConfig()));
+    // Create a trajectory that drives the specified distance / turns the specified angle.
+    frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+        getPose(), {}, { x, y, angle }, AUTO_TRAJECTORY_CONFIG);
+
+    // Start a follow trajectory command.
+    cmdFollowTrajectory(trajectory);
 }
 
-void Drive::cmdTrajectory(frc::Trajectory trajectory) {
-  // Cancel a command if running.
-  cmdCancel();
-
-  cmd = frc2::SwerveControllerCommand<4>(
-    trajectory,
-    std::function<frc::Pose2d()>(std::bind(&Drive::getPoseMeters, this)),
-    kinematics,
-    frc2::PIDController(1, 0, 0),
-    frc2::PIDController(1, 0, 0),
-    frc::ProfiledPIDController<units::radians>(1, 0, 0, {}),
-    std::function<void(std::array<frc::SwerveModuleState, 4>)>([=](std::array<frc::SwerveModuleState, 4> states){
-      for(unsigned i = 0; i < this->swerveModules.size(); i++) {
-        this->swerveModules.at(i)->setState(states.at(i));
-      }
-    })
-  );
-
-  cmd.value().Initialize();
+void Drive::cmdFollowTrajectory(frc::Trajectory trajectory) {
+    cmd.trajectory = trajectory;
+    cmd.timer.Reset();
+    cmd.timer.Start();
+    cmd.running = true;
 }
 
 bool Drive::cmdIsFinished() {
-  if (!cmd.has_value()) return true;
-  return cmd.value().IsFinished();
+    if (cmd.timer.Get() >= cmd.trajectory.TotalTime().value()) {
+        cmd.running = false;
+    }
+    return cmd.running;
 }
 
 void Drive::cmdCancel() {
-  if (cmd.has_value()) {
-    cmd.value().Cancel();
-  }
+    cmd.timer.Stop();
+    cmd.running = false;
 }
 
-frc::TrajectoryConfig Drive::getTrajectoryConfig() {
-  return frc::TrajectoryConfig(0.3_mps, 0.1_mps_sq);
+void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
+    // Generate module states using chassis velocities. The magic function of swerve drive.
+    wpi::array<frc::SwerveModuleState, 4> moduleStates = kinematics.ToSwerveModuleStates(chassisSpeeds);
+    
+    // Recalculate wheel speeds relative to the max speed.
+    kinematics.NormalizeWheelSpeeds(&moduleStates, DRIVE_MAX_SPEED);
+    
+    // Set the module states.
+    for(unsigned i = 0; i < swerveModules.size(); i++) {
+      swerveModules.at(i)->setState(moduleStates.at(i));
+    }
+}
+
+void Drive::updateOdometry() {
+    // Update the position and rotation on the field.
+    odometry.Update(getRotation(),
+        swerveModules.at(0)->getState(),
+        swerveModules.at(1)->getState(),
+        swerveModules.at(2)->getState(),
+        swerveModules.at(3)->getState());
+}
+
+void Drive::resetOdometry(frc::Pose2d pose) {
+    // Reset the position on the field.
+    odometry.ResetPosition(pose, getRotation());
+}
+
+void Drive::resetIMU() {
+    imu.Reset();
+}
+
+frc::Rotation2d Drive::getRotation() {
+    units::radian_t rotation = units::degree_t(fmod(imu.GetAngle(), 360));
+
+    // Convert -2π to 2π value into -π to π value.
+    if(units::math::abs(rotation).value() > wpi::math::pi) {
+        rotation = units::radian_t(rotation.value() - (2 * wpi::math::pi) * (std::signbit(rotation.value()) ? -1 : 1));
+    }
+    
+    return frc::Rotation2d(units::degree_t(rotation));
+}
+
+void Drive::executeCommand() {
+    // Only execute a command if the command is running.
+    if (cmd.running) {
+        // Check if the timer timer has passed the total time of the trajectory.
+        if (cmdIsFinished()) {
+            cmdCancel();
+        }
+        // Drive!!
+        else {
+            // Get the current time of the trajectory.
+            units::second_t currentTime = units::second_t(cmd.timer.Get());
+            // Sample the desired state of the trajectory at this point in time.
+            frc::Trajectory::State desiredState = cmd.trajectory.Sample(currentTime);
+            // Calculate chassis speeds required in order to reach the desired state.
+            frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
+                getPose(), desiredState, cmd.trajectory.States().back().pose.Rotation());
+            // Finally drive!
+            setModuleStates(targetChassisSpeeds);
+        }
+    }
+    //hi ishan
+    //hi jeff
+    //hi trevor
 }

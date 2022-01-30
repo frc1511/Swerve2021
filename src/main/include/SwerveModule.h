@@ -9,97 +9,66 @@
 #pragma GCC diagnostic pop
 
 /**
- * @brief  Represents a singular swerve module on the robot.
+ * Represents a singular swerve module on the robot.
  */
 class SwerveModule {
 public:
-  /**
-   * @brief  Constructs a swerve module object.
-   * 
-   * @param driveMotorChannel  The CAN ID of the drive motor (NEO Brushless).
-   * @param turningMotorChannel  The CAN ID of the turning motor (NEO 550).
-   * @param canCoderChannel  The CAN ID of the absolute encoder (CANCoder).
-   * @param turningOffset  The offset of the CANCoder.
-   */
-  SwerveModule(int driveMotorChannel, int turningMotorChannel, int canCoderChannel, double turningOffset);
-  ~SwerveModule();
-  
-  /**
-   * @brief  Sets the state of the swerve module.
-   * 
-   * @param state  The state (rotation, velocity, etc.) to move to.
-   */
-  void setState(frc::SwerveModuleState state);
-  
-  /**
-   * @brief  Retrieves the current state of the swerve module.
-   * 
-   * @return  The current state of the swerve module.
-   */
-  frc::SwerveModuleState getState();
-  
-private:
-  
-  /**
-   * @brief  Sets the drive motor's speed.
-   * 
-   * @param speed  The speed to set the drive motor to (-1 to 1).
-   */
-  void setDriveMotor(double speed);
-  
-  /**
-   * @brief  Sets the rotation of the swerve module's turning motor.
-   *  
-   * @param radians  The angle in radians to turn to.
-   */
-  void setTurningMotor(units::radian_t radians);
-  
-  /**
-   * @brief  Retrieves the current velocity of the drive motor's encoder.
-   * 
-   * @return  The velocity.
-   */
-  double getVelocity();
-  
-  /**
-   * @brief  The current absolute rotation of the module.
-   * 
-   * @return  The value of the CANcoder.
-   */
-  units::radian_t getAbsoluteRotation();
-  
-  /**
-   * @brief  Retrieves the current relative rotation of the module.
-   * 
-   * @return  The value of the NEO 550 encoder.
-   */
-  double getRelativeRotation();
-  
-private:
-  // The CAN ID of the NEO Brushless.
-  const int driveMotorChannel;
-  // The CAN ID of the NEO 550.
-  const int turningMotorChannel;
-  // The CAN ID of the CANCoder.
-  const int canCoderChannel;
+    SwerveModule(int driveCANID, int turningCANID, int canCoderCANID);
+    ~SwerveModule();
 
-  // The drive motor (NEO Brushless motor).
-  rev::CANSparkMax driveMotor;
-  // The encoder of the drive motor.
-  rev::CANEncoder driveEncoder;
-  // The PID controller of the drive motor.
-  rev::CANPIDController drivePID;
-  
-  // The turning motor (NEO 550).
-  rev::CANSparkMax turningMotor;
-  // The builtin encoder of the turning motor.
-  rev::CANEncoder turningRelEncoder;
-  // The PID controller of the turning motor.
-  rev::CANPIDController turningPID;
-  
-  // The absolute encoder (CTRE CANcoder)
-  CANCoder turningAbsSensor;
-  
-  // The offset of the absolute encoder.
-  const units::radian_t turningOffset;
+    /**
+     * Sets the state of the swerve module (Velocity and angle).
+     */
+    void setState(frc::SwerveModuleState state);
+
+    /**
+     * Returns the current state of the swerve module.
+     */
+    frc::SwerveModuleState getState();
+
+    /**
+     * Applies the current rotation of the module as the offset of the
+     * CANCoder. Only called when the module was replaced and rotated
+     * towards the front of the robot.
+     */
+    void configOffset();
+
+private:
+    /**
+     * Sets the speed of the drive motor (-1 to 1).
+     */
+    void setDriveMotor(double speed);
+
+    /**
+     * Returns the current velocity (RPM) of the drive motor.
+     */
+    double getDriveVelocity();
+
+    /**
+     * Sets the angle of the swerve module.
+     */
+    void setTurningMotor(units::radian_t angle);
+
+    /**
+     * Returns the relative rotation of the module (NEO 550 internal encoder).
+     */
+    double getRelativeRotation();
+
+    /**
+     * Returns the absolute rotation of the module (CANCoder).
+     */
+    units::radian_t getAbsoluteRotation();
+
+    // The drive motor (NEO Brushless motor).
+    rev::CANSparkMax driveMotor;
+    rev::CANEncoder driveEncoder;
+    rev::CANPIDController drivePID;
+
+    // The turning motor (NEO 550).
+    rev::CANSparkMax turningMotor;
+    rev::CANEncoder turningRelEncoder;
+    rev::CANPIDController turningPID;
+
+    // The absolute encoder (CTRE CANCoder).
+    ctre::phoenix::sensors::CANCoder turningAbsEncoder;
 };

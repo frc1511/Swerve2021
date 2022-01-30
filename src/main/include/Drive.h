@@ -11,12 +11,16 @@
 #include "frc/trajectory/Trajectory.h"
 #include <frc/trajectory/TrajectoryGenerator.h>
 #include "frc/controller/HolonomicDriveController.h"
-#include <frc2/command/SwerveControllerCommand.h>
 #include "frc/Timer.h"
 #include "adi/ADIS16470_IMU.h"
 #include "wpi/array.h"
 #include "wpi/math"
 #include <optional>
+
+#define DRIVE_MAX_SPEED 4_mps
+#define AUTO_MAX_SPEED 1_mps
+#define AUTO_MAX_ACCELERATION 0.4_mps_sq
+#define AUTO_TRAJECTORY_CONFIG (frc::TrajectoryConfig(AUTO_MAX_SPEED, AUTO_MAX_ACCELERATION))
 
 // The width between the the left and right swerve modules (not the robot width).
 #define ROBOT_WIDTH 0.362_m
@@ -24,131 +28,165 @@
 #define ROBOT_LENGTH 0.66_m
 
 /**
- * @brief  Represents the drivetrain of the robot and handles all drive-related functionality.
+ * Represents the drivetrain of the robot and handles all drive-related
+ * functionality.
  */
 class Drive {
 public:
-  Drive();
-  ~Drive();
+    Drive();
+    ~Drive();
   
-  /**
-   * @brief  Sets the swerve module states.
-   * 
-   * @param chassisSpeeds  The speeds of the chassis.
-   */
-  void setModuleStates(frc::ChassisSpeeds chassisSpeeds);
-  
-  /**
-   * @brief  Sets the drive speeds.
-   * 
-   * @param xVel  The X velocity of the chassis (-1 to 1).
-   * @param yVel  The Y velocity of the chassis (-1 to 1).
-   * @param rotVel  The rotational velocity of the chassis (-1 to 1).
-   * @param isFieldCentric  Whether to drive using field-centric or robot-centric control.
-   */
-  void setDrive(double xVel, double yVel, double rotVel, bool isFieldCentric = false);
-  
-  // The max speed of the robot (depends on weight of course).
-  const units::meters_per_second_t maxSpeed = 4_mps;
+    void process();
+        
+    /**
+     * Returns the current pose (X, Y position and rotation).
+     */
+    frc::Pose2d getPose();
 
-  /**
-   * @brief  Processes odometry and autonomous commands.
-   */
-  void process();
-  
-  /**
-   * @brief  Returns the rotation of the robot.
-   */
-  frc::Rotation2d getRotation();
+    /**
+     * Resets the forward direction of the robot during field-centric control.
+     */
+    void zeroRotation();
 
-  /**
-   * @brief  Updates odometry.
-   */
-  void updateOdometry();
+    /**
+     * Calibrates the IMU (Should be done only once at a time when the robot is
+     * not moving).
+     */
+    void calibrateIMU();
 
-  /**
-   * @brief  Resets the position on the field.
-   * 
-   * @param pose  The pose to reset to.
-   */
-  void resetOdometry(frc::Pose2d pose = frc::Pose2d());
+    /**
+     * Applies the current rotation of the swerve modules as the offset of the
+     * magnetic encoders. *** IMPORTANT *** Should only be called after
+     * replacing a swerve module and when all the swerve modules are rotated
+     * towards the front of the robot!
+     */
+    void setupMagneticEncoders();
+    
+    /**
+     * Manually set the velocities of the robot (dependant on control type).
+     */
+    void manualDrive(double xVel, double yVel, double rotVel);
 
-  /**
-   * @brief  Returns the current pose of the robot.
-   */
-  frc::Pose2d getPoseMeters();
-  
-  /**
-   * @brief  Resets the angle of the IMU to 0.
-   */
-  void resetIMU();
+    enum ControlMode {
+        ROBOT_CENTRIC,
+        FIELD_CENTRIC,
+    };
 
-  /**
-   * @brief  Calibrates the IMU.
-   */
-  void calibrateIMU();
-  
-  /**
-   * @brief  Begins a command to rotate a specified angle.
-   * 
-   * @param angle  The angle to rotate.
-   */
-  void cmdRotate(frc::Rotation2d angle);
+    /**
+     * Sets the control mode of the robot (relative to the robot or relative to
+     * the field).
+     */
+    void setControlMode(ControlMode mode);
 
-  /**
-   * @brief  Begins a command to drive a specified distance.
-   * 
-   * @param x  The amount of meters to move in the x direction.
-   * @param y  The amount of meters to move in the x direction.
-   * @param angle  The angle to rotate.
-   */
-  void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d());
+    /**
+     * Rotates all the swerve modules towards the center of the robot in order
+     * to reduce pushing by other robots (aka making the robot a brick).
+     */
+    void makeBrick();
 
-  /**
-   * @brief  Begins a command to drive a specified trajectory.
-   * 
-   * @param trajectory  The trajectory to follow.
-   */
-  void cmdTrajectory(frc::Trajectory trajectory);
+    // --- Commands ---
 
-  /**
-   * @brief  Returns whether the last command has finished.
-   */
-  bool cmdIsFinished();
+    /**
+     * Commands are used primarily during the autonomous period in order to
+     * instruct the drivetrain to execute an action, such as rotating, driving,
+     * or following a trajectory. Commands are mutually exclusive, meaning that
+     * when the drive is instructed to execute a command, it will abort any
+     * other ongoing commands and immediately begin the new one.
+     */
 
-  /**
-   * @brief  Cancels the current command.
-   */
-  void cmdCancel();
+    /**
+     * Begins a command to rotate a specified angle.
+     */
+    void cmdRotate(frc::Rotation2d angle);
 
-  frc::TrajectoryConfig getTrajectoryConfig();
+    /**
+     * Begins a command to drive a specified distance and rotate a specified
+     * angle.
+     */
+    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d());
+    
+    /**
+     * Begins a command to follow a specified trajectory.
+     */
+    void cmdFollowTrajectory(frc::Trajectory trajectory);
+
+    /**
+     * Returns whether the last command has finished.
+     */
+    bool cmdIsFinished();
+
+    /**
+     * Cancels the current command.
+     */
+    void cmdCancel();
 
 private:
+    /**
+     * Generates and sends states to the swerve modules from chassis speeds.
+     */
+    void setModuleStates(frc::ChassisSpeeds chassisSpeeds);
 
-  // The locations of the swerve modules on the robot.
-  wpi::array<frc::Translation2d, 4> locations {
-    frc::Translation2d(-ROBOT_WIDTH/2, +ROBOT_LENGTH/2), // Front left.
-    frc::Translation2d(-ROBOT_WIDTH/2, -ROBOT_LENGTH/2), // Back left.
-    frc::Translation2d(+ROBOT_WIDTH/2, -ROBOT_LENGTH/2), // Back right.
-    frc::Translation2d(+ROBOT_WIDTH/2, +ROBOT_LENGTH/2), // Front right.
-  };
+    /**
+     * Updates the position and rotation on the field.
+     */
+    void updateOdometry();
 
-  // The swerve modules on the robot.
-  wpi::array<SwerveModule*, 4> swerveModules {
-    new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER, -1.55),
-    new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER, -1.59),
-    new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER, -1.59),
-    new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER, +1.52),
-  };
+    /**
+     * Resets the position and rotation on the field.
+     */
+    void resetOdometry(frc::Pose2d pose = frc::Pose2d());
 
-  // The helper class that converts chassis speeds into swerve module states.
-  frc::SwerveDriveKinematics<4> kinematics { locations };
-  
-  // The odometry class that tracks the position of the robot on the field.
-  frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
-  
-  // The ADIS16470 IMU (3D gyro and accelerometer).
-  frc::ADIS16470_IMU imu {};
-  
-  std::optional<frc2::SwerveControllerCommand<4>> cmd = {};
+    /**
+     * Resets the IMU to 0.
+     */
+    void resetIMU();
+    
+    /**
+     * Returns the rotation of the robot.
+     */
+    frc::Rotation2d getRotation();
+
+    /**
+     * Executes the current command.
+     */
+    void executeCommand();
+
+    // The control mode of the robot.
+    ControlMode controlMode = FIELD_CENTRIC;
+
+    // The locations of the swerve modules on the robot.
+    wpi::array<frc::Translation2d, 4> locations {
+        frc::Translation2d(-ROBOT_WIDTH/2, +ROBOT_LENGTH/2), // Front left.
+        frc::Translation2d(-ROBOT_WIDTH/2, -ROBOT_LENGTH/2), // Back left.
+        frc::Translation2d(+ROBOT_WIDTH/2, -ROBOT_LENGTH/2), // Back right.
+        frc::Translation2d(+ROBOT_WIDTH/2, +ROBOT_LENGTH/2), // Front right.
+    };
+
+    // The swerve modules on the robot.
+    wpi::array<SwerveModule*, 4> swerveModules {
+      new SwerveModule(SWERVE_FL_DRIVE_MOTOR, SWERVE_FL_ROT_MOTOR, SWERVE_FL_ROT_CAN_CODER),
+      new SwerveModule(SWERVE_BL_DRIVE_MOTOR, SWERVE_BL_ROT_MOTOR, SWERVE_BL_ROT_CAN_CODER),
+      new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER),
+      new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER),
+    };
+
+    // The helper class that converts chassis speeds into swerve module states.
+    frc::SwerveDriveKinematics<4> kinematics { locations };
+
+    // The odometry class that tracks the position of the robot on the field.
+    frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
+
+    // The ADIS16470 IMU (3D gyro and accelerometer) in the SPI port on the
+    // roborio.
+    frc::ADIS16470_IMU imu {};
+
+    struct SwerveCommand {
+        frc::Trajectory trajectory;
+        frc::Timer timer;
+        bool running = false;
+    };
+
+    SwerveCommand cmd = {};
+
+    frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
 };
