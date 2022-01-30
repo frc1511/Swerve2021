@@ -3,6 +3,8 @@
 #include "frc/kinematics/SwerveModuleState.h"
 #include <cmath>
 
+#define ENCODER_OFFSETS_FILE_NAME "magnetic_encoder_offsets.txt"
+
 Drive::Drive() {
     resetIMU();
     // Configure the calibration time to 4 seconds.
@@ -11,6 +13,11 @@ Drive::Drive() {
     imu.SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
     // Calibrate the IMU.
     calibrateIMU();
+
+    // Read encoder offsets from the file and apply them to the swerve modules.
+    if (readOffsetsFile()) {
+        applyOffsets();
+    }
 }
 
 Drive::~Drive() {
@@ -41,10 +48,17 @@ void Drive::calibrateIMU() {
     imu.Calibrate();
 }
 
-void Drive::setupMagneticEncoders() {
-    for (SwerveModule* module : swerveModules) {
-        module->configOffset();
+void Drive::configMagneticEncoders() {
+    // Apply the current rotation of the swerve modules to the offsets.
+    for (unsigned i = 0; i < swerveModules.size(); i++) {
+        units::radian_t angle = swerveModules[i]->getState().angle.Radians();
+        offsets[i] += angle;
     }
+    // Write the new offsets to the offsets file.
+    writeOffsetsFile();
+
+    // Apply the new offsets to the swerve modules.
+    applyOffsets();
 }
 
 void Drive::manualDrive(double xVel, double yVel, double rotVel) {
@@ -194,4 +208,50 @@ void Drive::executeCommand() {
     //hi ishan
     //hi jeff
     //hi trevor
+}
+
+bool Drive::readOffsetsFile() {
+    // Open the file.
+    std::ifstream file(ENCODER_OFFSETS_FILE_NAME);
+    // Make sure the file exists.
+    if (!file) {
+        return false;
+    }
+
+    unsigned i = 0;
+    std::string line;
+    // Loop through each line of the file.
+    while (getline(file, line) && i <= 3) {
+        // Convert the line to a number.
+        double num = std::atof(line.c_str());
+        
+        // If it can read a value from the file.
+        if (num) {
+            // Set the offset in the array.
+            offsets[i] = units::radian_t(num);
+        }
+        // Increment the index.
+        i++;
+    }
+
+    return true;
+    //hi nadia
+}
+
+void Drive::writeOffsetsFile() {
+    // Open the file (will create a new file if already exists).
+    std::ofstream file(ENCODER_OFFSETS_FILE_NAME);
+    // Clear the file's contents.
+    file.clear();
+
+    // Write each offset to the file.
+    for (units::radian_t offset : offsets) {
+        file << offset.value() << '\n';
+    }
+}
+
+void Drive::applyOffsets() {
+    for (unsigned i = 0; i < swerveModules.size(); i++) {
+        swerveModules[i]->setOffset(offsets[i]);
+    }
 }

@@ -112,8 +112,8 @@ frc::SwerveModuleState SwerveModule::getState() {
     return { units::meters_per_second_t(getDriveVelocity()), frc::Rotation2d(getAbsoluteRotation()) };
 }
 
-void SwerveModule::configOffset() {
-    turningAbsEncoder.ConfigMagnetOffset(units::degree_t(getAbsoluteRotation()).value());
+void SwerveModule::setOffset(units::radian_t offset) {
+    canCoderOffset = offset;
 }
 
 void SwerveModule::setDriveMotor(double speed) {
@@ -142,7 +142,6 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
     output += getRelativeRotation();
     
     // Set PID controller reference.
-    // turningPID.SetReference(output, rev::ControlType::kPosition);
     turningPID.SetReference(output, rev::ControlType::kPosition);
 }
 
@@ -151,5 +150,5 @@ double SwerveModule::getRelativeRotation() {
 }
 
 units::radian_t SwerveModule::getAbsoluteRotation() {
-    return units::radian_t(units::degree_t(turningAbsEncoder.GetAbsolutePosition() - 90));
+    return units::degree_t(turningAbsEncoder.GetAbsolutePosition() - 90) - canCoderOffset;
 }

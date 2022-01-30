@@ -27,11 +27,9 @@ public:
     frc::SwerveModuleState getState();
 
     /**
-     * Applies the current rotation of the module as the offset of the
-     * CANCoder. Only called when the module was replaced and rotated
-     * towards the front of the robot.
+     * Applies an offset to the CANCoder.
      */
-    void configOffset();
+    void setOffset(units::radian_t offset);
 
 private:
     /**
@@ -71,4 +69,7 @@ private:
 
     // The absolute encoder (CTRE CANCoder).
     ctre::phoenix::sensors::CANCoder turningAbsEncoder;
+
+    // The offset of the CANCoders.
+    units::radian_t canCoderOffset = 0_rad;
 };

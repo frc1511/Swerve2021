@@ -15,7 +15,8 @@
 #include "adi/ADIS16470_IMU.h"
 #include "wpi/array.h"
 #include "wpi/math"
-#include <optional>
+#include <wpi/FileSystem.h>
+#include <fstream>
 
 #define DRIVE_MAX_SPEED 4_mps
 #define AUTO_MAX_SPEED 1_mps
@@ -60,7 +61,7 @@ public:
      * replacing a swerve module and when all the swerve modules are rotated
      * towards the front of the robot!
      */
-    void setupMagneticEncoders();
+    void configMagneticEncoders();
     
     /**
      * Manually set the velocities of the robot (dependant on control type).
@@ -151,6 +152,21 @@ private:
      */
     void executeCommand();
 
+    /**
+     * Reads the magnetic encoder offsets file.
+     */
+    bool readOffsetsFile();
+
+    /**
+     * Writes the current magnetic encoder offsets to the file.
+     */
+    void writeOffsetsFile();
+
+    /**
+     * Applies the current offsets to the swerve modules.
+     */
+    void applyOffsets();
+
     // The control mode of the robot.
     ControlMode controlMode = FIELD_CENTRIC;
 
@@ -169,6 +185,9 @@ private:
       new SwerveModule(SWERVE_BR_DRIVE_MOTOR, SWERVE_BR_ROT_MOTOR, SWERVE_BR_ROT_CAN_CODER),
       new SwerveModule(SWERVE_FR_DRIVE_MOTOR, SWERVE_FR_ROT_MOTOR, SWERVE_FR_ROT_CAN_CODER),
     };
+
+    // The offsets of the swerve modules.
+    wpi::array<units::radian_t, 4> offsets { 0_rad, 0_rad, 0_rad, 0_rad };
 
     // The helper class that converts chassis speeds into swerve module states.
     frc::SwerveDriveKinematics<4> kinematics { locations };
