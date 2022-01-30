@@ -1,16 +1,17 @@
 #pragma once
+
 #include "Drive.h"
-#include <memory>
-#include <frc/Joystick.h>
-#include <frc/XboxController.h>
+#include <frc/PS4Controller.h>
 
 class Controls {
 public:
     Controls(Drive* drive);
     void process();
     
-    Drive* drive; 
-    frc::Joystick controllerDriver {0};
+    Drive* drive;
+
+    frc::PS4Controller driverController {0};
+    frc::PS4Controller auxController {1};
     
 private:
     bool wasDriveModeToggled = false;
