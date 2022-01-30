@@ -51,8 +51,8 @@ void Drive::calibrateIMU() {
 void Drive::configMagneticEncoders() {
     // Apply the current rotation of the swerve modules to the offsets.
     for (unsigned i = 0; i < swerveModules.size(); i++) {
-        units::radian_t angle = swerveModules[i]->getState().angle.Radians() - units::radian_t(wpi::math::pi / 2);
-        offsets[i] += angle;
+        units::radian_t angle = swerveModules.at(i)->getState().angle.Radians() - units::radian_t(wpi::math::pi / 2);
+        offsets.at(i) += angle;
     }
     // Write the new offsets to the offsets file.
     writeOffsetsFile();
@@ -101,8 +101,10 @@ void Drive::makeBrick() {
         else {
             angle = 45_deg;
         }
+        // Stop the drive motor.
+        swerveModules.at(i)->setDriveMotor(0);
         // Turn the swerve module to point towards the center of the robot.
-        swerveModules[i]->setState({ 0_mps, angle });
+        swerveModules.at(i)->setTurningMotor(angle);
     }
 }
 
@@ -152,7 +154,7 @@ void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
     
     // Set the module states.
     for(unsigned i = 0; i < swerveModules.size(); i++) {
-      swerveModules.at(i)->setState(moduleStates.at(i));
+        swerveModules.at(i)->setState(moduleStates.at(i));
     }
 }
 
@@ -228,7 +230,7 @@ bool Drive::readOffsetsFile() {
         // If it can read a value from the file.
         if (num) {
             // Set the offset in the array.
-            offsets[i] = units::radian_t(num);
+            offsets.at(i) = units::radian_t(num);
         }
         // Increment the index.
         i++;
@@ -252,6 +254,6 @@ void Drive::writeOffsetsFile() {
 
 void Drive::applyOffsets() {
     for (unsigned i = 0; i < swerveModules.size(); i++) {
-        swerveModules[i]->setOffset(offsets[i]);
+        swerveModules.at(i)->setOffset(offsets.at(i));
     }
 }

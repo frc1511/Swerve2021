@@ -22,6 +22,16 @@ public:
     void setState(frc::SwerveModuleState state);
 
     /**
+     * Sets the speed of the drive motor (-1 to 1).
+     */
+    void setDriveMotor(double speed);
+
+    /**
+     * Sets the angle of the swerve module.
+     */
+    void setTurningMotor(units::radian_t angle);
+
+    /**
      * Returns the current state of the swerve module.
      */
     frc::SwerveModuleState getState();
@@ -33,19 +43,9 @@ public:
 
 private:
     /**
-     * Sets the speed of the drive motor (-1 to 1).
-     */
-    void setDriveMotor(double speed);
-
-    /**
      * Returns the current velocity (RPM) of the drive motor.
      */
     double getDriveVelocity();
-
-    /**
-     * Sets the angle of the swerve module.
-     */
-    void setTurningMotor(units::radian_t angle);
 
     /**
      * Returns the relative rotation of the module (NEO 550 internal encoder).
