@@ -18,7 +18,6 @@ void Robot::TeleopInit() { }
 void Robot::TeleopPeriodic() {
   controls.process();
   drive.process();
-  printf("horizontal: %f, vertical: %f\n", limelight.getAngleHorizontal(), limelight.getAngleVertical());
 }
 
 void Robot::DisabledInit() { }

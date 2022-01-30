@@ -3,7 +3,7 @@
 #include "frc/kinematics/SwerveModuleState.h"
 #include <cmath>
 
-#define ENCODER_OFFSETS_FILE_NAME "magnetic_encoder_offsets.txt"
+#define ENCODER_OFFSETS_FILE_NAME "/home/lvuser/magnetic_encoder_offsets.txt"
 
 Drive::Drive() {
     resetIMU();
@@ -51,7 +51,7 @@ void Drive::calibrateIMU() {
 void Drive::configMagneticEncoders() {
     // Apply the current rotation of the swerve modules to the offsets.
     for (unsigned i = 0; i < swerveModules.size(); i++) {
-        units::radian_t angle = swerveModules[i]->getState().angle.Radians();
+        units::radian_t angle = swerveModules[i]->getState().angle.Radians() - units::radian_t(wpi::math::pi / 2);
         offsets[i] += angle;
     }
     // Write the new offsets to the offsets file.

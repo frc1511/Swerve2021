@@ -26,7 +26,8 @@ Controls::Controls(Drive* drive) : drive(drive) { }
 void Controls::process() {
     bool resetPosition           = controllerDriver.GetRawButton(Y_BUTTON);
     bool toggleDriveMode         = controllerDriver.GetRawButton(X_BUTTON);
-    bool brickDrive              = controllerDriver.GetRawButton(A_BUTTON);
+    bool brickDrive              = false;//controllerDriver.GetRawButton(A_BUTTON);
+    bool configOffsets           = controllerDriver.GetRawButton(A_BUTTON);
     double xAxisVelocity         = controllerDriver.GetRawAxis(LEFT_X_AXIS);
     double yAxisVelocity         = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
     double leftRotationVelocity  = controllerDriver.GetRawAxis(LEFT_TRIGGER);
@@ -57,6 +58,10 @@ void Controls::process() {
 
     if(brickDrive) {
         drive->makeBrick();
+    }
+
+    if(configOffsets) {
+        drive->configMagneticEncoders();
     }
 
     double finalXAxis = 0.0;

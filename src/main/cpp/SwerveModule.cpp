@@ -85,6 +85,7 @@ SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID)
     
     // --- CANCoder config ---
     
+    turningAbsEncoder.ConfigFactoryDefault();
     turningAbsEncoder.ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange::Signed_PlusMinus180);
 }
 
