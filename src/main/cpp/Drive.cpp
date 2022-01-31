@@ -61,24 +61,23 @@ void Drive::configMagneticEncoders() {
     applyOffsets();
 }
 
-void Drive::manualDrive(double xVel, double yVel, double rotVel) {
+void Drive::manualDrive(double xPct, double yPct, double rotPct) {
     // Take control if drive command is running.
     cmdCancel();
+
+    units::meters_per_second_t xVel    = units::meters_per_second_t(xVel)    * DRIVE_MAX_SPEED;
+    units::meters_per_second_t yVel    = units::meters_per_second_t(yVel)    * DRIVE_MAX_SPEED;
+    units::radians_per_second_t rotVel = units::radians_per_second_t(rotVel) * DRIVE_MAX_ANGULAR_SPEED;
     
     frc::ChassisSpeeds chassisSpeeds;
 
     // Generate chassis speeds depending on the control mode.
     switch (controlMode) {
         case FIELD_CENTRIC:
-            chassisSpeeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel),
-                                                                        units::meters_per_second_t(yVel),
-                                                                        units::radians_per_second_t(rotVel),
-                                                                        getRotation());
+            chassisSpeeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVel, yVel, rotVel, getRotation());
             break;
         case ROBOT_CENTRIC:
-            chassisSpeeds = {units::meters_per_second_t(xVel),
-                             units::meters_per_second_t(yVel),
-                             units::radians_per_second_t(rotVel)};
+            chassisSpeeds = { xVel, yVel, rotVel };
             break;
     }
     

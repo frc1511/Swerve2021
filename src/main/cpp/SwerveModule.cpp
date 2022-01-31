@@ -6,11 +6,14 @@
 // The circumference of each wheel (meters).
 #define WHEEL_CIRCUMFERENCE 0.21
 
-// The value of the encoder after 1 rotation.
-#define WHEEL_1_ROT_ENC_VAL 1
+// The rotations of the encoder after 1 rotation of the wheel.
+#define WHEEL_1_ROT_ENC_VAL 5.25
 
 // The coefficient used to convert the internal drive encoder value to meters (Drive motor).
 #define DRIVE_ENC_TO_METERS_FACTOR (WHEEL_CIRCUMFERENCE / WHEEL_1_ROT_ENC_VAL)
+
+// The coefficient used to convert the a value in meters to motor rotations (Drive motor).
+#define DRIVE_METER_TO_ENC_FACTOR ()
 
 // The coeffieient used to convert a radian value to internal encoder value (Turning motor).
 #define ROT_RAD_TO_ENC_FACTOR 10.1859
@@ -34,6 +37,7 @@
 #define ROT_D_VALUE 0
 #define ROT_I_ZONE_VALUE 0
 #define ROT_FF_VALUE 0
+
 SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID)
   : driveMotor(driveCANID, rev::CANSparkMax::MotorType::kBrushless),
     driveEncoder(driveMotor.GetEncoder()),
@@ -59,8 +63,8 @@ SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID)
     driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus0, 10);
     driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus1, 10);
     driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus2, 10);
-    // Apply a coefficient to convert the encoder value to meters.
-    driveEncoder.SetPositionConversionFactor(DRIVE_ENC_TO_METERS_FACTOR);
+
+    drivePID.SetFeedbackDevice(driveEncoder);
     // PID Values.
     drivePID.SetP(DRIVE_P_VALUE, 0);
     drivePID.SetI(DRIVE_I_VALUE, 0);
@@ -71,10 +75,17 @@ SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID)
     // --- Turning motor config ---
     
     turningMotor.RestoreFactoryDefaults();
+    // Coast when idle.
     turningMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
     turningMotor.EnableVoltageCompensation(TURNING_MAX_VOLTAGE);
+    // Limit in amps.
     turningMotor.SetSmartCurrentLimit(TURNING_MAX_AMPS);
     turningMotor.SetInverted(true);
+    // Frame period.
+    turningMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus0, 10);
+    turningMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus1, 10);
+    turningMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus2, 10);
+
     turningPID.SetFeedbackDevice(turningRelEncoder);
     // PID values.
     turningPID.SetP(ROT_P_VALUE, 0);
@@ -105,29 +116,33 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
         setTurningMotor(optimizedState.angle.Radians());
     }
   
-    // Set the drive motor's velocity.
-    setDriveMotor(optimizedState.speed.value());
+    // Set the velocity of the drive motor.
+    setDriveMotor(optimizedState.speed);
 }
 
 frc::SwerveModuleState SwerveModule::getState() {
-    return { units::meters_per_second_t(getDriveVelocity()), frc::Rotation2d(getAbsoluteRotation()) };
+    return { getDriveVelocity(), getAbsoluteRotation() };
 }
 
 void SwerveModule::setOffset(units::radian_t offset) {
     canCoderOffset = offset;
 }
 
-void SwerveModule::setDriveMotor(double speed) {
-    driveMotor.Set(speed);
+void SwerveModule::setDriveMotor(units::meters_per_second_t velocity) {
+    // Convert the meters per second value into rotations per minute.
+    double rpm = velocity.value() 60 * DRIVE_METER_TO_ENC_FACTOR;
+    
+    // Set the target RPM of the drive motor.
+    drivePID.SetReference(rpm, rev::ControlType::kVelocity);
 }
 
-double SwerveModule::getDriveVelocity() {
-    return driveEncoder.GetVelocity();
+units::meters_per_second_t SwerveModule::getDriveVelocity() {
+    return units::meters_per_second_t(driveEncoder.GetVelocity() * DRIVE_ENC_TO_METERS_FACTOR);
 }
 
 void SwerveModule::setTurningMotor(units::radian_t angle) {
     // Subtract the absolute rotation from the target rotation.
-    units::radian_t rotation(angle - getAbsoluteRotation());
+    units::radian_t rotation(angle - getAbsoluteRotation().Radians());
     
     // Fix the discontinuity problem by converting a -2π to 2π value into -π to π value.
     // If the value is above π rad or below -π rad...
@@ -150,6 +165,6 @@ double SwerveModule::getRelativeRotation() {
     return turningRelEncoder.GetPosition();
 }
 
-units::radian_t SwerveModule::getAbsoluteRotation() {
-    return units::degree_t(turningAbsEncoder.GetAbsolutePosition() - 90) - canCoderOffset;
+frc::Rotation2d SwerveModule::getAbsoluteRotation() {
+    return frc::Rotation2d(units::degree_t(turningAbsEncoder.GetAbsolutePosition() - 90) - canCoderOffset);
 }

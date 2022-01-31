@@ -22,9 +22,9 @@ public:
     void setState(frc::SwerveModuleState state);
 
     /**
-     * Sets the speed of the drive motor (-1 to 1).
+     * Sets the velocity of the drive motor (meters per second).
      */
-    void setDriveMotor(double speed);
+    void setDriveMotor(units::meters_per_second_t velocity);
 
     /**
      * Sets the angle of the swerve module.
@@ -45,7 +45,7 @@ private:
     /**
      * Returns the current velocity (RPM) of the drive motor.
      */
-    double getDriveVelocity();
+    units::meters_per_second_t getDriveVelocity();
 
     /**
      * Returns the relative rotation of the module (NEO 550 internal encoder).
@@ -55,7 +55,7 @@ private:
     /**
      * Returns the absolute rotation of the module (CANCoder).
      */
-    units::radian_t getAbsoluteRotation();
+    frc::Rotation2d getAbsoluteRotation();
 
     // The drive motor (NEO Brushless motor).
     rev::CANSparkMax driveMotor;

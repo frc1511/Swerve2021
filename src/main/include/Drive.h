@@ -19,6 +19,7 @@
 #include <fstream>
 
 #define DRIVE_MAX_SPEED 4_mps
+#define DRIVE_MAX_ANGULAR_SPEED 2_mps
 #define AUTO_MAX_SPEED 1_mps
 #define AUTO_MAX_ACCELERATION 0.4_mps_sq
 #define AUTO_TRAJECTORY_CONFIG (frc::TrajectoryConfig(AUTO_MAX_SPEED, AUTO_MAX_ACCELERATION))
@@ -64,9 +65,10 @@ public:
     void configMagneticEncoders();
     
     /**
-     * Manually set the velocities of the robot (dependant on control type).
+     * Manually control the robot using percentages of the max output velocities.
+     * (dependant on control type).
      */
-    void manualDrive(double xVel, double yVel, double rotVel);
+    void manualDrive(double xPct, double yPct, double rotPct);
 
     enum ControlMode {
         ROBOT_CENTRIC,
