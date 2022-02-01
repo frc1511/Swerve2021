@@ -13,7 +13,7 @@
 #define DRIVE_ENC_TO_METERS_FACTOR (WHEEL_CIRCUMFERENCE / WHEEL_1_ROT_ENC_VAL)
 
 // The coefficient used to convert the a value in meters to motor rotations (Drive motor).
-#define DRIVE_METER_TO_ENC_FACTOR ()
+#define DRIVE_METER_TO_ENC_FACTOR (WHEEL_1_ROT_ENC_VAL / WHEEL_CIRCUMFERENCE)
 
 // The coeffieient used to convert a radian value to internal encoder value (Turning motor).
 #define ROT_RAD_TO_ENC_FACTOR 10.1859
@@ -130,7 +130,7 @@ void SwerveModule::setOffset(units::radian_t offset) {
 
 void SwerveModule::setDriveMotor(units::meters_per_second_t velocity) {
     // Convert the meters per second value into rotations per minute.
-    double rpm = velocity.value() 60 * DRIVE_METER_TO_ENC_FACTOR;
+    double rpm = velocity.value() * 60 * DRIVE_METER_TO_ENC_FACTOR;
     
     // Set the target RPM of the drive motor.
     drivePID.SetReference(rpm, rev::ControlType::kVelocity);

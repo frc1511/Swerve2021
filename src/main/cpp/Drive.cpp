@@ -65,9 +65,9 @@ void Drive::manualDrive(double xPct, double yPct, double rotPct) {
     // Take control if drive command is running.
     cmdCancel();
 
-    units::meters_per_second_t xVel    = units::meters_per_second_t(xVel)    * DRIVE_MAX_SPEED;
-    units::meters_per_second_t yVel    = units::meters_per_second_t(yVel)    * DRIVE_MAX_SPEED;
-    units::radians_per_second_t rotVel = units::radians_per_second_t(rotVel) * DRIVE_MAX_ANGULAR_SPEED;
+    units::meters_per_second_t xVel    = xPct   * DRIVE_MAX_SPEED;
+    units::meters_per_second_t yVel    = yPct   * DRIVE_MAX_SPEED;
+    units::radians_per_second_t rotVel = rotPct * DRIVE_MAX_ANGULAR_SPEED;
     
     frc::ChassisSpeeds chassisSpeeds;
 
@@ -101,7 +101,7 @@ void Drive::makeBrick() {
             angle = 45_deg;
         }
         // Stop the drive motor.
-        swerveModules.at(i)->setDriveMotor(0);
+        swerveModules.at(i)->setDriveMotor(0_mps);
         // Turn the swerve module to point towards the center of the robot.
         swerveModules.at(i)->setTurningMotor(angle);
     }

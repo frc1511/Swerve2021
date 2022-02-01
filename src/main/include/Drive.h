@@ -19,10 +19,15 @@
 #include <fstream>
 
 #define DRIVE_MAX_SPEED 4_mps
-#define DRIVE_MAX_ANGULAR_SPEED 2_mps
+#define DRIVE_MAX_ANGULAR_SPEED 3.14_rad_per_s
+
 #define AUTO_MAX_SPEED 1_mps
+#define AUTO_MAX_ANGULAR_SPEED 3.14_rad_per_s
 #define AUTO_MAX_ACCELERATION 0.4_mps_sq
+#define AUTO_MAX_ANGULAR_ACCELERATION (3.14_rad_per_s / 1_s)
+
 #define AUTO_TRAJECTORY_CONFIG (frc::TrajectoryConfig(AUTO_MAX_SPEED, AUTO_MAX_ACCELERATION))
+#define AUTO_TRAJECTORY_ANGULAR_CONSTRAINTS (frc::TrapezoidProfile<units::radians>::Constraints(AUTO_MAX_ANGULAR_SPEED, AUTO_MAX_ANGULAR_ACCELERATION))
 
 // The width between the the left and right swerve modules (not the robot width).
 #define ROBOT_WIDTH 0.362_m
