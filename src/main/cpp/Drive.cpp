@@ -136,7 +136,7 @@ bool Drive::cmdIsFinished() {
     if (cmd.timer.Get() >= cmd.trajectory.TotalTime().value()) {
         cmd.running = false;
     }
-    return cmd.running;
+    return !cmd.running;
 }
 
 void Drive::cmdCancel() {

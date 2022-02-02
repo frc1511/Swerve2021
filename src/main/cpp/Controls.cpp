@@ -27,7 +27,7 @@ void Controls::process() {
     bool resetPosition           = controllerDriver.GetRawButton(Y_BUTTON);
     bool toggleDriveMode         = controllerDriver.GetRawButton(X_BUTTON);
     bool brickDrive              = controllerDriver.GetRawButton(A_BUTTON);
-    bool configOffsets           = false;//controllerDriver.GetRawButton(A_BUTTON);
+    bool configOffsets           = false; //controllerDriver.GetRawButton(A_BUTTON);
     double xAxisVelocity         = controllerDriver.GetRawAxis(LEFT_X_AXIS);
     double yAxisVelocity         = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
     double leftRotationVelocity  = controllerDriver.GetRawAxis(LEFT_TRIGGER);
