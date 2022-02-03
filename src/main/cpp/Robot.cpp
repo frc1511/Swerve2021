@@ -1,12 +1,13 @@
 #include "Robot.h"
-#include <cmath>
 
 void Robot::RobotInit() { }
 void Robot::RobotPeriodic() { }
 
 void Robot::AutonomousInit() {
-  printf("auto???\n");
-  drive.cmdRotate(90_deg);
+  drive.reset();
+  // drive.cmdRotate(90_deg);/
+  drive.cmdDrive(5_m, 5_m, 0_deg);
+  // drive.cmdDrive(0_m, 0_m, 90_deg);
 }
 
 void Robot::AutonomousPeriodic() {
@@ -14,7 +15,10 @@ void Robot::AutonomousPeriodic() {
   drive.process();
 }
 
-void Robot::TeleopInit() { }
+void Robot::TeleopInit() {
+  drive.reset();
+}
+
 void Robot::TeleopPeriodic() {
   controls.process();
   drive.process();

@@ -9,6 +9,7 @@
 #include "frc/kinematics/SwerveDriveOdometry.h"
 #include "frc/kinematics/ChassisSpeeds.h"
 #include "frc/trajectory/Trajectory.h"
+#include <frc/trajectory/TrajectoryUtil.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
 #include "frc/controller/HolonomicDriveController.h"
 #include "frc/Timer.h"
@@ -43,6 +44,7 @@ public:
     Drive();
     ~Drive();
   
+    void reset();
     void process();
         
     /**
@@ -117,6 +119,11 @@ public:
      * Begins a command to follow a specified trajectory.
      */
     void cmdFollowTrajectory(frc::Trajectory trajectory);
+
+    /**
+     * Begins a command to follow a pathweaver trajecectory from a json file.
+     */
+    void cmdFollowPathweaverTrajectory(std::string path);
 
     /**
      * Returns whether the last command has finished.
@@ -212,7 +219,7 @@ private:
         bool running = false;
     };
 
-    SwerveCommand cmd = {};
+    SwerveCommand cmd {};
 
-    frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
+    frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, AUTO_TRAJECTORY_ANGULAR_CONSTRAINTS } };
 };

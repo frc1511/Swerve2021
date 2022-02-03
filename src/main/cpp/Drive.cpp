@@ -26,6 +26,11 @@ Drive::~Drive() {
     }
 }
 
+void Drive::reset() {
+    cmdCancel();
+    resetOdometry();
+}
+
 void Drive::process() {
     // hi nevin
     // hi jeff :D
@@ -118,11 +123,23 @@ void Drive::cmdRotate(frc::Rotation2d angle) {
 
 void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle) {
     // Create a trajectory that drives the specified distance / turns the specified angle.
+
+    frc::TrajectoryConfig config = AUTO_TRAJECTORY_CONFIG;
+    // config.SetReversed(true);
+    config.AddConstraint(frc::SwerveDriveKinematicsConstraint<4>(kinematics, AUTO_MAX_SPEED));
+
     frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
-        getPose(), {}, { x, y, angle }, AUTO_TRAJECTORY_CONFIG);
+        getPose(), {}, { x, y, angle }, config); 
 
     // Start a follow trajectory command.
     cmdFollowTrajectory(trajectory);
+}
+
+void Drive::cmdFollowPathweaverTrajectory(std::string path) {
+    // std::string directory = "";
+    // frc::filesystem::GetDeployDirectory(directory);
+    // Load trajectory from Pathweaver json file.
+    cmdFollowTrajectory(frc::TrajectoryUtil::FromPathweaverJson(path));
 }
 
 void Drive::cmdFollowTrajectory(frc::Trajectory trajectory) {
@@ -130,11 +147,31 @@ void Drive::cmdFollowTrajectory(frc::Trajectory trajectory) {
     cmd.timer.Reset();
     cmd.timer.Start();
     cmd.running = true;
+    units::second_t totalTime = trajectory.TotalTime();
+
+    auto start = trajectory.Sample(totalTime).pose;
+    std::cout << "initial pose: " << start.X() << ", " << start.Y() << ", " << start.Rotation().Degrees() << '\n';
+    auto low = trajectory.Sample(totalTime/4).pose;
+    std::cout << "a little below mid pose: " << low.X() << ", " << low.Y() << ", " << low.Rotation().Degrees() << '\n';
+    auto mid = trajectory.Sample(totalTime/2).pose;
+
+    std::cout << "mid pose: " << mid.X() << ", " << mid.Y() << ", " << mid.Rotation().Degrees() << '\n';
+    auto high = trajectory.Sample((totalTime/4) * 3).pose;
+    std::cout << "a little higher than mid: " << high.X() << ", " << high.Y() << ", " << high.Rotation().Degrees() << '\n';
+    auto last = trajectory.Sample(totalTime).pose;
+    std::cout << "final pose: " << last.X() << ", " << last.Y() << ", " << last.Rotation().Degrees() << '\n';
+    
+    std::cout << "FOLLOW TRAJECTORY STARTED\n";
 }
 
 bool Drive::cmdIsFinished() {
-    if (cmd.timer.Get() >= cmd.trajectory.TotalTime().value()) {
-        cmd.running = false;
+    // If a command is currently running, but the total time of the trajectory has elapsed.
+    if (cmd.running && cmd.timer.Get() >= cmd.trajectory.TotalTime().value()) {
+        // Stop the command.
+        cmdCancel();
+        // Set the wheel speeds to zero.
+        setModuleStates({0_mps, 0_mps, 0_rad_per_s});
+        std::cout << "FOLLOW TRAJECTORY ENDED\n";
     }
     return !cmd.running;
 }
@@ -188,24 +225,20 @@ frc::Rotation2d Drive::getRotation() {
 
 void Drive::executeCommand() {
     // Only execute a command if the command is running.
-    if (cmd.running) {
-        // Check if the timer timer has passed the total time of the trajectory.
-        if (cmdIsFinished()) {
-            cmdCancel();
-        }
-        // Drive!!
-        else {
-            // Get the current time of the trajectory.
-            units::second_t currentTime = units::second_t(cmd.timer.Get());
-            // Sample the desired state of the trajectory at this point in time.
-            frc::Trajectory::State desiredState = cmd.trajectory.Sample(currentTime);
-            // Calculate chassis speeds required in order to reach the desired state.
-            frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
-                getPose(), desiredState, cmd.trajectory.States().back().pose.Rotation());
-            // Finally drive!
-            setModuleStates(targetChassisSpeeds);
-        }
+    if (!cmdIsFinished()) {
+        // Get the current time of the trajectory.
+        units::second_t currentTime = units::second_t(cmd.timer.Get());
+        // Sample the desired state of the trajectory at this point in time.
+        frc::Trajectory::State desiredState = cmd.trajectory.Sample(currentTime);
+        // Calculate chassis speeds required in order to reach the desired state.
+        frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
+            getPose(), desiredState, cmd.trajectory.States().back().pose.Rotation());
+            
+        // std::cout << "target x: " << targetChassisSpeeds.vx << " target y: " << targetChassisSpeeds.vy << " target rot: " << targetChassisSpeeds.omega << '\n';
+        // Finally drive!
+        setModuleStates(targetChassisSpeeds);
     }
+
     //hi ishan
     //hi jeff
     //hi trevor

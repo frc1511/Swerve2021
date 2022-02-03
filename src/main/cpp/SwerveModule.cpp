@@ -25,7 +25,7 @@
 
 // --- PID values ---
 
-#define DRIVE_P_VALUE 0.00008
+#define DRIVE_P_VALUE 0.00001
 #define DRIVE_I_VALUE 0
 #define DRIVE_D_VALUE 0
 #define DRIVE_I_ZONE_VALUE 0
